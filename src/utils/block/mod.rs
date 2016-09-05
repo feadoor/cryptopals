@@ -25,7 +25,7 @@ pub enum PaddingSchemes {
 
 /// Trait for encrypting and decrypting a single block of bytes, to be used as
 /// the core of a block cipher.
-pub trait Cipher {
+trait Cipher {
     /// Encrypt a single block of bytes.
     fn encrypt(&self, input: &[u8]) -> Vec<u8>;
     /// Decrypt a single block of bytes.
