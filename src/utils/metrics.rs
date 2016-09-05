@@ -16,7 +16,9 @@ pub enum HammingDistanceError {
 
 impl fmt::Display for HammingDistanceError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "Inputs have unequal lengths")
+        match *self {
+            UnequalLengths => write!(f, "Inputs have unequal lengths")
+        }
     }
 }
 
@@ -28,7 +30,9 @@ impl fmt::Debug for HammingDistanceError {
 
 impl error::Error for HammingDistanceError {
     fn description(&self) -> &str {
-        "unequal input lengths"
+        match *self {
+            UnequalLengths => "unequal input lengths"
+        }
     }
 }
 
