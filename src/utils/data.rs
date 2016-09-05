@@ -1,8 +1,8 @@
 //! Structure to hold the contents of a message, supporting input and output
 //! of messages in a variety of formats.
 
-pub use self::FromHexError::*;
-pub use self::FromBase64Error::*;
+use self::FromHexError::*;
+use self::FromBase64Error::*;
 
 use std::fmt;
 use std::error;
@@ -390,5 +390,17 @@ impl Data {
     /// ```
     pub fn slice(&self, start: usize, end: usize) -> Data {
         Data{bytes: self.bytes[start..end].to_vec()}
+    }
+
+    /// Returns a clone of this Data.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let data  = Data::from_text("Some text");
+    /// let other = data.clone();
+    /// ```
+    pub fn clone(&self) -> Data {
+        Data{bytes: self.bytes().clone().to_vec()}
     }
 }

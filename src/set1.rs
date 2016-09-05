@@ -10,7 +10,7 @@ use utils::metrics;
 use utils::xor;
 
 /// Run the solution to Set 1 Challenge 1 (Convert hex to base64)
-pub fn challenge1() {
+pub fn challenge01() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 1,");
@@ -29,7 +29,7 @@ pub fn challenge1() {
 }
 
 /// Run the solution to Set 1 Challenge 2 (Fixed XOR)
-pub fn challenge2() {
+pub fn challenge02() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 2,");
@@ -53,7 +53,7 @@ pub fn challenge2() {
 }
 
 /// Run the solution to Set 1 Challenge 3 (Single-byte XOR cipher)
-pub fn challenge3() {
+pub fn challenge03() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 3,");
@@ -77,7 +77,7 @@ pub fn challenge3() {
 }
 
 /// Run the solution to Set 1 Challenge 4 (Detect single-character XOR)
-pub fn challenge4() {
+pub fn challenge04() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 4,");
@@ -114,7 +114,7 @@ pub fn challenge4() {
 }
 
 /// Run the solution to Set 1 Challenge 5 (Implement repeating-key XOR)
-pub fn challenge5() {
+pub fn challenge05() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 5,");
@@ -139,7 +139,7 @@ pub fn challenge5() {
 }
 
 /// Run the solution to Set 1 Challenge 6 (Break repeating-key XOR)
-pub fn challenge6() {
+pub fn challenge06() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 6,");
@@ -167,7 +167,7 @@ pub fn challenge6() {
 }
 
 /// Run the solution to Set 1 Challenge 7 (AES in ECB mode)
-pub fn challenge7() {
+pub fn challenge07() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 7,");
@@ -197,7 +197,7 @@ pub fn challenge7() {
 }
 
 /// Run the solution to Set 1 Challenge 8 (Detect AES in ECB mode)
-pub fn challenge8() {
+pub fn challenge08() {
 
     // Print an explanatory header.
     println!("Running Set 1, Challenge 8,");

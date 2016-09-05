@@ -1,6 +1,6 @@
 //! Functions for evaluating pieces of data according to various metrics.
 
-pub use self::HammingDistanceError::*;
+use self::HammingDistanceError::*;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -94,7 +94,9 @@ pub fn score_as_english(data: &Data) -> f64 {
 ///
 /// # Errors
 ///
-/// Returns `Err(UnequalLengths)` when the input lengths differ.
+/// Returns `Err(UnequalLengths)` if the two input data were of different
+/// lengths.
+///
 /// # Example
 ///
 /// ```
