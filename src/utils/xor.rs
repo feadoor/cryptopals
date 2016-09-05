@@ -31,7 +31,7 @@ pub fn xor(data: &Data, key: &Data) -> Data {
         }
     }
 
-    Data::from_bytes(&bytes)
+    Data::from_bytes(bytes)
 }
 
 /// Finds the most likely single-byte key that was used to encrypt the given
@@ -104,11 +104,11 @@ pub fn best_repeating_key(data: &Data) -> Data {
         }
 
         // Find the best key for this stream.
-        let stream_data = Data::from_bytes(&stream_bytes);
+        let stream_data = Data::from_bytes(stream_bytes);
         let (best_key, _) = best_single_byte_key(&stream_data);
         key_bytes.push(best_key.bytes()[0]);
     }
 
     // Put all the key bytes together to form a single key.
-    Data::from_bytes(&key_bytes)
+    Data::from_bytes(key_bytes)
 }

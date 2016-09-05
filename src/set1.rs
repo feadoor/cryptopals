@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
+use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::xor;
 
@@ -159,6 +160,36 @@ pub fn challenge6() {
 
     // Decrypt the data.
     let plain = xor::xor(&data, &key);
+    println!("Decrypted output: {}", plain.to_text());
+
+    println!("\nChallenge complete!\n");
+}
+
+/// Run the solution to Set 1 Challenge 7 (AES in ECB mode)
+pub fn challenge7() {
+
+    // Print an explanatory header.
+    println!("Running Set 1, Challenge 7,");
+    println!("AES in ECB mode:\n");
+
+    // Get the base-64 input.
+    let mut base64 = "".to_string();
+    let file = File::open(&Path::new("input/set1challenge7.txt")).unwrap();
+    let reader = BufReader::new(file);
+    for line_it in reader.lines() {
+        base64.push_str(&line_it.unwrap());
+    }
+    println!("Base-64 input: {}", base64);
+
+    // Get the key.
+    let key = "YELLOW SUBMARINE";
+    println!("Key (text): {}", key);
+
+    // Decrypt the data using AES-128-ECB.
+    let data = Data::from_base64(&base64).unwrap();
+    let key  = Data::from_text(key);
+    let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
+    let plain = block.decrypt(&data, OperationModes::Ecb, PaddingSchemes::Pkcs7);
     println!("Decrypted output: {}", plain.to_text());
 
     println!("\nChallenge complete!\n");

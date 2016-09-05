@@ -556,7 +556,7 @@ impl Cipher for AesCipher {
     }
 
     /// The size of a block for the AES cipher.
-    fn block_size() -> u32 {
+    fn block_size(&self) -> usize {
         16
     }
 }

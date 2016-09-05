@@ -251,10 +251,10 @@ impl Data {
     /// # Example
     ///
     /// ```
-    /// let data = Data::from_bytes(&vec![100, 97, 119]);
+    /// let data = Data::from_bytes(vec![100, 97, 119]);
     /// ```
-    pub fn from_bytes(input: &Vec<u8>) -> Data {
-        Data{bytes: input.clone()}
+    pub fn from_bytes(input: Vec<u8>) -> Data {
+        Data{bytes: input}
     }
 
     /// Creates a new Data object representing a single byte.
