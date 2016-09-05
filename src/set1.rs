@@ -6,6 +6,7 @@ use std::path::Path;
 
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
+use utils::metrics;
 use utils::xor;
 
 /// Run the solution to Set 1 Challenge 1 (Convert hex to base64)
@@ -191,6 +192,41 @@ pub fn challenge7() {
     let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
     let plain = block.decrypt(&data, OperationModes::Ecb, PaddingSchemes::Pkcs7);
     println!("Decrypted output: {}", plain.to_text());
+
+    println!("\nChallenge complete!\n");
+}
+
+/// Run the solution to Set 1 Challenge 8 (Detect AES in ECB mode)
+pub fn challenge8() {
+
+    // Print an explanatory header.
+    println!("Running Set 1, Challenge 8,");
+    println!("Detect AES in ECB mode:\n");
+
+    // Keep track of the best match so far.
+    let mut best_data = Data::new();
+    let mut best_score = 0;
+
+    // Read in all of the hexstrings from file.
+    let file = File::open(&Path::new("input/set1challenge8.txt")).unwrap();
+    let reader = BufReader::new(file);
+    for line_it in reader.lines() {
+        let line = line_it.unwrap();
+
+        // Check if this line provides a better match - if a ciphertext
+        // contains repeated blocks, then that indicates that ECB mode is
+        // more likely.
+        let data = Data::from_hex(&line).unwrap();
+        let score = metrics::duplicate_blocks(&data, 16);
+        if score > best_score {
+            best_data = data;
+            best_score = score;
+        }
+    }
+
+    // Output the results
+    println!("Correct input: {}", best_data.to_hex());
+    println!("Number of repeating blocks: {}", best_score);
 
     println!("\nChallenge complete!\n");
 }

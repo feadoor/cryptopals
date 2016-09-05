@@ -2,6 +2,7 @@
 
 pub use self::HammingDistanceError::*;
 
+use std::collections::HashMap;
 use std::fmt;
 use std::error;
 
@@ -153,4 +154,35 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
 
     // Normalize by the keysize for fair comparison.
     average_distance / keysize as f64
+}
+
+/// Returns the number of pairs of duplicate blocks of the given size
+/// appearing in the data.
+///
+/// # Example
+///
+/// ```
+/// let data  = Data::from_text("Bananas Canada");
+/// let score = duplicate_blocks(&data, 2);
+/// ```
+pub fn duplicate_blocks(data: &Data, block_size: usize) -> u32 {
+
+    // Use a HashMap to store occurences of each block.
+    let mut duplicates: HashMap<&[u8], u32> = HashMap::new();
+
+    // Iterate over the data and count the occurrences of each block.
+    let mut ix = 0;
+    while ix + block_size <= data.bytes().len() {
+        let block = &data.bytes()[ix .. ix + block_size];
+        let entry = duplicates.entry(block).or_insert(0);
+        *entry += 1;
+        ix += block_size;
+    }
+
+    // Do some quick maths to work out the number of duplicates.
+    let mut dup_count = 0;
+    for (_, count) in &duplicates {
+        dup_count += count * (count - 1) / 2;
+    }
+    dup_count
 }

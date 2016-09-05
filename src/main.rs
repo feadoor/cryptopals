@@ -13,4 +13,5 @@ fn main() {
     set1::challenge5();
     set1::challenge6();
     set1::challenge7();
+    set1::challenge8();
 }
