@@ -2,6 +2,8 @@
 //!
 //! https://cryptopals.com/
 
+extern crate rand;
+
 pub mod utils;
 pub mod set1;
 pub mod set2;
@@ -21,4 +23,5 @@ fn main() {
     // Run the challenges in Set 2.
     set2::challenge09();
     set2::challenge10();
+    set2::challenge11();
 }

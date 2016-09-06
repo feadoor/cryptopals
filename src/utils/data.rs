@@ -4,6 +4,9 @@
 use self::FromHexError::*;
 use self::FromBase64Error::*;
 
+use rand;
+use rand::Rng;
+
 use std::fmt;
 use std::error;
 use std::string::String;
@@ -93,6 +96,22 @@ impl Data {
     /// ```
     pub fn new() -> Data {
         Data{bytes: Vec::new()}
+    }
+
+    /// Create a new random Data object containing the given number of bytes.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let data = Data::random(100);
+    /// ```
+    pub fn random(size: usize) -> Data {
+        let mut rng = rand::thread_rng();
+        let mut bytes = Vec::with_capacity(size);
+        for _ in 0..size {
+            bytes.push(rng.gen::<u8>());
+        }
+        Data{bytes: bytes}
     }
 
     /// Creates a new Data object from a sequence of bytes given as a
