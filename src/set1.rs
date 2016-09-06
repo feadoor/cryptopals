@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
+use attacks;
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::metrics;
@@ -66,7 +67,7 @@ pub fn challenge03() {
 
     // Find the best XOR key.
     let data = Data::from_hex(hex).unwrap();
-    let (key, _) = xor::best_single_byte_key(&data);
+    let (key, _) = attacks::xor::best_single_byte_key(&data);
     println!("Key (hex): {}", key.to_hex());
 
     // Decrypt the data.
@@ -96,7 +97,7 @@ pub fn challenge04() {
 
         // Check if this line provides a better match
         let data = Data::from_hex(&line).unwrap();
-        let (key, score) = xor::best_single_byte_key(&data);
+        let (key, score) = attacks::xor::best_single_byte_key(&data);
         if score > best_score {
             best_data = data;
             best_key = key;
@@ -156,7 +157,7 @@ pub fn challenge06() {
 
     // Find the best repeating-XOR key.
     let data = Data::from_base64(&base64).unwrap();
-    let key  = xor::best_repeating_key(&data);
+    let key  = attacks::xor::best_repeating_key(&data);
     println!("Key (text): {}", key.to_text());
 
     // Decrypt the data.

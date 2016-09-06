@@ -4,6 +4,8 @@
 
 extern crate rand;
 
+pub mod attacks;
+pub mod blackboxes;
 pub mod utils;
 pub mod set1;
 pub mod set2;
