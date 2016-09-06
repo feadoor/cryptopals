@@ -22,11 +22,11 @@ pub enum Algorithms {
 }
 
 /// Block cipher modes of operation.
-pub enum OperationModes<'a> {
+pub enum OperationModes {
     /// Electronic codebook (ECB) mode.
     Ecb,
     /// Cipher block chaining (CBC) mode, including initilisation vector.
-    Cbc(&'a Data)
+    Cbc(Data)
 }
 
 /// Block cipher padding schemes.
@@ -77,30 +77,44 @@ trait Cipher {
 /// A generic block cipher encryptor and decryptor.
 pub struct BlockCipher {
     /// The cipher used to encrypt and decrypt single blocks.
-    cipher: Box<Cipher>
+    cipher: Box<Cipher>,
+    /// The operation mode for this block cipher.
+    mode: OperationModes,
+    /// The padding scheme for this block cipher.
+    padding: PaddingSchemes
 }
 
 impl BlockCipher {
 
-    /// Returns a new BlockCipher which uses the given algorithm and key for
-    /// encryption and decryption of blocks.
+    /// Returns a new BlockCipher which uses the given algorithm, key,
+    /// operation mode and padding scheme for encryption and decryption of
+    /// blocks.
     ///
     /// # Example
     ///
     /// ```
     /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes, &key);
+    /// let block = BlockCipher::new(Algorithms::Aes,
+    ///                              OperationModes::Ecb,
+    ///                              PaddingSchemes::Pkcs7,
+    ///                              &key).unwrap();
     /// ```
-    pub fn new(algorithm: Algorithms, key: &Data) -> Result<BlockCipher, String> {
+    pub fn new(algorithm: Algorithms,     mode: OperationModes,
+               padding:   PaddingSchemes, key:  &Data)
+               -> Result<BlockCipher, String> {
         match algorithm {
             Algorithms::Aes => {
                 match aes::AesCipher::new(key.bytes()) {
-                    Ok(aes)  => Ok(BlockCipher{cipher: Box::new(aes)}),
+                    Ok(aes)  => Ok(BlockCipher{cipher: Box::new(aes),
+                                               mode: mode,
+                                               padding: padding}),
                     Err(err) => Err(format!("{}", err))
                 }
             }
             Algorithms::Null(size) =>
-                 Ok(BlockCipher{cipher: Box::new(null::NullCipher::new(size))})
+                 Ok(BlockCipher{cipher: Box::new(null::NullCipher::new(size)),
+                                mode: mode,
+                                padding: padding})
         }
     }
 
@@ -110,20 +124,22 @@ impl BlockCipher {
     ///
     /// ```
     /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
+    /// let block = BlockCipher::new(Algorithms::Aes,
+    ///                              OperationModes::Ecb,
+    ///                              PaddingSchemes::Pkcs7,
+    ///                              &key).unwrap();
     /// let input = Data::from_text("Some very important information.");
-    /// let output = block.encrypt(&input, OperationModes::Ecb, PaddingSchemes::Pkcs7);
+    /// let output = block.encrypt(&input);
     /// ```
-    pub fn encrypt(&self, input: &Data,
-                       mode: OperationModes, padding: PaddingSchemes) -> Data {
+    pub fn encrypt(&self, input: &Data) -> Data {
         let data; let output;
-        match padding {
+        match self.padding {
             PaddingSchemes::Pkcs7 => data = self.pkcs7_pad(input)
         }
-        match mode {
+        match self.mode {
             OperationModes::Ecb => output = self.ecb_encrypt(&data),
             OperationModes::Cbc(ref iv) =>
-                                  output = self.cbc_encrypt(&data, iv).unwrap()
+                                 output = self.cbc_encrypt(&data, &iv).unwrap()
         }
         output
     }
@@ -134,20 +150,22 @@ impl BlockCipher {
     ///
     /// ```
     /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
+    /// let block = BlockCipher::new(Algorithms::Aes,
+    ///                              OperationModes::Ecb,
+    ///                              PaddingSchemes::Pkcs7,
+    ///                              &key).unwrap();
     /// let hex = "366450b83d2f4fdafa7884021ba030f73266ec2819186c2cc05c36237e0217cb";
     /// let input = Data::from_hex(hex).unwrap();
-    /// let output = block.decrypt(&input, OperationModes::Ecb, PaddingSchemes::Pkcs7);
+    /// let output = block.decrypt(&input);
     /// ```
-    pub fn decrypt(&self, input: &Data,
-                       mode: OperationModes, padding: PaddingSchemes) -> Data {
+    pub fn decrypt(&self, input: &Data) -> Data {
         let data; let output;
-        match mode {
+        match self.mode {
             OperationModes::Ecb => data = self.ecb_decrypt(input),
             OperationModes::Cbc(ref iv) =>
-                                   data = self.cbc_decrypt(&input, iv).unwrap()
+                                  data = self.cbc_decrypt(&input, &iv).unwrap()
         }
-        match padding {
+        match self.padding {
             PaddingSchemes::Pkcs7 => output = self.pkcs7_unpad(&data)
         }
         output

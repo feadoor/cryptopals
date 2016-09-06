@@ -189,8 +189,11 @@ pub fn challenge07() {
     // Decrypt the data using AES-128-ECB.
     let data = Data::from_base64(&base64).unwrap();
     let key  = Data::from_text(key);
-    let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
-    let plain = block.decrypt(&data, OperationModes::Ecb, PaddingSchemes::Pkcs7);
+    let block = BlockCipher::new(Algorithms::Aes,
+                                 OperationModes::Ecb,
+                                 PaddingSchemes::Pkcs7,
+                                 &key).unwrap();
+    let plain = block.decrypt(&data);
     println!("Decrypted output: {}", plain.to_text());
 
     println!("\nChallenge complete!\n");
@@ -203,30 +206,18 @@ pub fn challenge08() {
     println!("Running Set 1, Challenge 8,");
     println!("Detect AES in ECB mode:\n");
 
-    // Keep track of the best match so far.
-    let mut best_data = Data::new();
-    let mut best_score = 0;
-
     // Read in all of the hexstrings from file.
     let file = File::open(&Path::new("input/set1challenge8.txt")).unwrap();
     let reader = BufReader::new(file);
     for line_it in reader.lines() {
         let line = line_it.unwrap();
 
-        // Check if this line provides a better match - if a ciphertext
-        // contains repeated blocks, then that indicates that ECB mode is
-        // more likely.
+        // Check if this line was encrypted using ECB.
         let data = Data::from_hex(&line).unwrap();
-        let score = metrics::duplicate_blocks(&data, 16);
-        if score > best_score {
-            best_data = data;
-            best_score = score;
+        if metrics::is_ecb_mode(&data, 16) {
+            println!("Encrypted with ECB: {}", data.to_hex());
         }
     }
-
-    // Output the results
-    println!("Correct input: {}", best_data.to_hex());
-    println!("Number of repeating blocks: {}", best_score);
 
     println!("\nChallenge complete!\n");
 }

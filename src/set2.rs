@@ -23,8 +23,11 @@ pub fn challenge09() {
     println!("Hex input: {}", data.to_hex());
 
     // Add the padding.
-    let block = BlockCipher::new(Algorithms::Null(20), &Data::new()).unwrap();
-    let padded = block.encrypt(&data, OperationModes::Ecb, PaddingSchemes::Pkcs7);
+    let block = BlockCipher::new(Algorithms::Null(20),
+                                 OperationModes::Ecb,
+                                 PaddingSchemes::Pkcs7,
+                                 &Data::new()).unwrap();
+    let padded = block.encrypt(&data);
     println!("Padded output: {}", padded.to_hex());
 
     println!("\nChallenge complete!\n");
@@ -57,8 +60,11 @@ pub fn challenge10() {
     // Decrypt the data using AES-128-CBC.
     let data = Data::from_base64(&base64).unwrap();
     let key  = Data::from_text(key);
-    let block = BlockCipher::new(Algorithms::Aes, &key).unwrap();
-    let plain = block.decrypt(&data, OperationModes::Cbc(&iv), PaddingSchemes::Pkcs7);
+    let block = BlockCipher::new(Algorithms::Aes,
+                                 OperationModes::Cbc(iv),
+                                 PaddingSchemes::Pkcs7,
+                                 &key).unwrap();
+    let plain = block.decrypt(&data);
     println!("Decrypted output: {}", plain.to_text());
 
     println!("\nChallenge complete!\n");

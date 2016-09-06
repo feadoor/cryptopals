@@ -2,7 +2,7 @@
 
 use self::HammingDistanceError::*;
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 use std::error;
 
@@ -158,33 +158,30 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
     average_distance / keysize as f64
 }
 
-/// Returns the number of pairs of duplicate blocks of the given size
-/// appearing in the data.
+/// Returns `true` or `false` as to whether it is likely that the given
+/// encrypted data has been encrypted using ECB mode.
 ///
 /// # Example
 ///
 /// ```
-/// let data  = Data::from_text("Bananas Canada");
-/// let score = duplicate_blocks(&data, 2);
+/// let data = Data::from_text("Bananas Canada");
+/// let ecb  = is_ecb_mode(&data, 2);
 /// ```
-pub fn duplicate_blocks(data: &Data, block_size: usize) -> u32 {
+pub fn is_ecb_mode(data: &Data, block_size: usize) -> bool {
 
     // Use a HashMap to store occurences of each block.
-    let mut duplicates: HashMap<&[u8], u32> = HashMap::new();
+    let mut blocks: HashSet<&[u8]> = HashSet::new();
 
-    // Iterate over the data and count the occurrences of each block.
+    // Iterate over the data and check if each block has appeared before.
     let mut ix = 0;
     while ix + block_size <= data.bytes().len() {
         let block = &data.bytes()[ix .. ix + block_size];
-        let entry = duplicates.entry(block).or_insert(0);
-        *entry += 1;
+        if blocks.contains(block) {
+            return true;
+        }
+        blocks.insert(block);
         ix += block_size;
     }
 
-    // Do some quick maths to work out the number of duplicates.
-    let mut dup_count = 0;
-    for (_, count) in &duplicates {
-        dup_count += count * (count - 1) / 2;
-    }
-    dup_count
+    false
 }
