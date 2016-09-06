@@ -269,7 +269,7 @@ impl BlockCipher {
                                  data.bytes().len() % self.cipher.block_size();
 
         // Construct a new Data with the padding included.
-        let mut new_bytes = data.bytes().to_vec().clone();
+        let mut new_bytes = data.bytes().to_vec();
         for _ in 0..pad {
             new_bytes.push(pad as u8);
         }

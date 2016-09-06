@@ -106,3 +106,73 @@ impl EcbOrCbc {
         }
     }
 }
+
+/// A black box which encrypts some input data by appending a fixed, unknown
+/// suffix, and then encrypts under ECB mode with a fixed, unknown key.
+///
+/// # Goal
+///
+/// To be able to determine the suffix.
+pub struct EcbWithSuffix {
+    /// The BlockCipher used to encrypt data.
+    block: BlockCipher,
+    /// The fixed suffix which is appended to inputs.
+    suffix: Data
+}
+
+impl EcbWithSuffix {
+
+    /// Creates a new EcbWithSuffix which uses the given suffix.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let suffix = Data::from_text("Secret suffix");
+    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
+    /// ```
+    pub fn new(suffix: Data) -> EcbWithSuffix {
+        let key = Data::random(16);
+        let block = BlockCipher::new(Algorithms::Aes,
+                                     OperationModes::Ecb,
+                                     PaddingSchemes::Pkcs7,
+                                     &key).unwrap();
+        EcbWithSuffix{block: block, suffix: suffix}
+    }
+
+    /// Encrypts the input data.
+    ///
+    /// First appends the suffix to the given data, then encrypts under ECB
+    /// mode.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let suffix = Data::from_text("Secret suffix");
+    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
+    /// let input = Data::from_text("Please encrypt this text");
+    /// let output = ecb_suffix_box.encrypt(&input);
+    /// ```
+    pub fn encrypt(&self, input: &Data) -> Data {
+        let new_input_size = input.bytes().len() + self.suffix.bytes().len();
+        let mut new_input_bytes = Vec::with_capacity(new_input_size);
+        new_input_bytes.extend_from_slice(&input.bytes());
+        new_input_bytes.extend_from_slice(&self.suffix.bytes());
+        let new_input = Data::from_bytes(new_input_bytes);
+
+        self.block.encrypt(&new_input)
+    }
+
+    /// Checks if the suffix has been correctly determined.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let suffix = Data::from_text("Secret suffix");
+    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
+    /// let guess = Data::from_text("Wrong suffix");
+    /// let correct = ecb_suffix_box.check_answer(&guess);
+    /// ```
+    pub fn check_answer(&self, suffix_guess: &Data) -> bool {
+        suffix_guess.bytes() == self.suffix.bytes()
+    }
+}

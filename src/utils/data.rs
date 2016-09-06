@@ -420,6 +420,6 @@ impl Data {
     /// let other = data.clone();
     /// ```
     pub fn clone(&self) -> Data {
-        Data{bytes: self.bytes().clone().to_vec()}
+        Data{bytes: self.bytes().to_vec()}
     }
 }

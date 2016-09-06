@@ -4,7 +4,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-use blackboxes::EcbOrCbc;
+use attacks;
+use blackboxes::{EcbOrCbc, EcbWithSuffix};
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::metrics;
@@ -97,7 +98,63 @@ pub fn challenge11() {
     }
 
     // Print out how well we did.
-    println!("Correctly guessed mode with a {}% success rate", score / 10.0);
+    println!("Correctly guessed with a {}% success rate", score / 10.0);
+
+    println!("\nChallenge complete!\n");
+}
+
+/// Run the solution to Set 2 Challenge 12 (Byte-at-a-time ECB decryption (Simple))
+pub fn challenge12() {
+
+    // Print an explanatory header.
+    println!("Running Set 2, Challenge 12,");
+    println!("Byte-at-a-time ECB decryption (Simple):\n");
+
+    // Create an ECB-with-suffix black-box.
+    let base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg\
+                  aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq\
+                  dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg\
+                  YnkK";
+    let suffix = Data::from_base64(base64).unwrap();
+    let ecb_suffix_box = EcbWithSuffix::new(suffix);
+
+    // Determine the block size.
+    let block_size;
+    let base_len = ecb_suffix_box.encrypt(&Data::new()).bytes().len();
+    let mut cnt = 1;
+    loop {
+        let bytes = vec![0; cnt];
+        let input = Data::from_bytes(bytes);
+        let new_len = ecb_suffix_box.encrypt(&input).bytes().len();
+        if new_len > base_len {
+            block_size = new_len - base_len;
+            break;
+        }
+        cnt += 1;
+    }
+    println!("Block size: {}", block_size);
+
+    // Confirm that ECB is being used.
+    let test_bytes = vec![0; block_size * 10];
+    let output = ecb_suffix_box.encrypt(&Data::from_bytes(test_bytes));
+    if metrics::is_ecb_mode(&output, block_size) {
+        println!("ECB mode is being used.");
+    }
+    else {
+        println!("ECB mode is not being used, exiting.");
+        return;
+    }
+
+    // Decode the suffix without reading it directly!
+    println!("Decrypting suffix...");
+    let suffix_guess = attacks::block::find_ecb_suffix(&ecb_suffix_box, block_size);
+    if ecb_suffix_box.check_answer(&suffix_guess) {
+        println!("Success!");
+        println!("Suffix (text): {}", suffix_guess.to_text());
+    }
+    else {
+        println!("Failure...");
+    }
 
     println!("\nChallenge complete!\n");
 }
