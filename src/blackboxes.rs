@@ -17,11 +17,10 @@ use utils::data::Data;
 /// To be able to determine which mode has been used.
 pub struct EcbOrCbc {
     /// The last mode that was used for encryption.
-    last_mode: OperationModes
+    last_mode: OperationModes,
 }
 
 impl EcbOrCbc {
-
     /// Create a new EcbOrCbc.
     ///
     /// # Example
@@ -30,7 +29,7 @@ impl EcbOrCbc {
     /// let ecb_cbc_box = EcbOrCbc::new();
     /// ```
     pub fn new() -> EcbOrCbc {
-        EcbOrCbc{last_mode: OperationModes::Ecb} // This is a lie - never mind.
+        EcbOrCbc { last_mode: OperationModes::Ecb } // This is a lie - never mind.
     }
 
     /// Encrypt the input data.
@@ -56,9 +55,9 @@ impl EcbOrCbc {
         // Generate some random bytes at the start and end of the input.
         let mut noisy_input = Vec::with_capacity(input.bytes().len() + 20);
         let before_count = rand::thread_rng().gen_range(5, 11);
-        let after_count  = rand::thread_rng().gen_range(5, 11);
-        let before_data  = Data::random(before_count);
-        let after_data   = Data::random(after_count);
+        let after_count = rand::thread_rng().gen_range(5, 11);
+        let before_data = Data::random(before_count);
+        let after_data = Data::random(after_count);
 
         noisy_input.extend_from_slice(before_data.bytes());
         noisy_input.extend_from_slice(input.bytes());
@@ -73,15 +72,16 @@ impl EcbOrCbc {
             block = BlockCipher::new(Algorithms::Aes,
                                      OperationModes::Ecb,
                                      PaddingSchemes::Pkcs7,
-                                     &key).unwrap();
-        }
-        else {
+                                     &key)
+                .unwrap();
+        } else {
             let iv = Data::random(16);
             self.last_mode = OperationModes::Cbc(iv.clone());
             block = BlockCipher::new(Algorithms::Aes,
                                      OperationModes::Cbc(iv),
                                      PaddingSchemes::Pkcs7,
-                                     &key).unwrap();
+                                     &key)
+                .unwrap();
         }
 
         // Return the encrypted Data.
@@ -102,7 +102,7 @@ impl EcbOrCbc {
     pub fn check_answer(&self, is_ecb: bool) -> bool {
         match self.last_mode {
             OperationModes::Ecb => is_ecb,
-            _                   => !is_ecb
+            _ => !is_ecb,
         }
     }
 }
@@ -117,11 +117,10 @@ pub struct EcbWithSuffix {
     /// The BlockCipher used to encrypt data.
     block: BlockCipher,
     /// The fixed suffix which is appended to inputs.
-    suffix: Data
+    suffix: Data,
 }
 
 impl EcbWithSuffix {
-
     /// Creates a new EcbWithSuffix which uses the given suffix.
     ///
     /// # Example
@@ -135,8 +134,12 @@ impl EcbWithSuffix {
         let block = BlockCipher::new(Algorithms::Aes,
                                      OperationModes::Ecb,
                                      PaddingSchemes::Pkcs7,
-                                     &key).unwrap();
-        EcbWithSuffix{block: block, suffix: suffix}
+                                     &key)
+            .unwrap();
+        EcbWithSuffix {
+            block: block,
+            suffix: suffix,
+        }
     }
 
     /// Encrypts the input data.

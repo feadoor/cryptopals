@@ -21,8 +21,8 @@ pub fn xor(data: &Data, key: &Data) -> Data {
     'outer: loop {
         for k_byte in key.bytes().iter() {
             let e_byte = match it.next() {
-                None         => break 'outer,
-                Some(d_byte) => *k_byte ^ *d_byte
+                None => break 'outer,
+                Some(d_byte) => *k_byte ^ *d_byte,
             };
             bytes.push(e_byte);
         }

@@ -29,7 +29,8 @@ pub fn challenge09() {
     let block = BlockCipher::new(Algorithms::Null(20),
                                  OperationModes::Ecb,
                                  PaddingSchemes::Pkcs7,
-                                 &Data::new()).unwrap();
+                                 &Data::new())
+        .unwrap();
     let padded = block.encrypt(&data);
     println!("Padded output: {}", padded.to_hex());
 
@@ -62,11 +63,12 @@ pub fn challenge10() {
 
     // Decrypt the data using AES-128-CBC.
     let data = Data::from_base64(&base64).unwrap();
-    let key  = Data::from_text(key);
+    let key = Data::from_text(key);
     let block = BlockCipher::new(Algorithms::Aes,
                                  OperationModes::Cbc(iv),
                                  PaddingSchemes::Pkcs7,
-                                 &key).unwrap();
+                                 &key)
+        .unwrap();
     let plain = block.decrypt(&data);
     println!("Decrypted output: {}", plain.to_text());
 
@@ -139,8 +141,7 @@ pub fn challenge12() {
     let output = ecb_suffix_box.encrypt(&Data::from_bytes(test_bytes));
     if metrics::is_ecb_mode(&output, block_size) {
         println!("ECB mode is being used.");
-    }
-    else {
+    } else {
         println!("ECB mode is not being used, exiting.");
         return;
     }
@@ -151,8 +152,7 @@ pub fn challenge12() {
     if ecb_suffix_box.check_answer(&suffix_guess) {
         println!("Success!");
         println!("Suffix (text): {}", suffix_guess.to_text());
-    }
-    else {
+    } else {
         println!("Failure...");
     }
 

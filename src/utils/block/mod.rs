@@ -18,7 +18,7 @@ pub enum Algorithms {
     Aes,
     /// A dummy cipher which takes blocks of the given size and does no
     /// encryption or decryption.
-    Null(usize)
+    Null(usize),
 }
 
 /// Block cipher modes of operation.
@@ -26,25 +26,25 @@ pub enum OperationModes {
     /// Electronic codebook (ECB) mode.
     Ecb,
     /// Cipher block chaining (CBC) mode, including initilisation vector.
-    Cbc(Data)
+    Cbc(Data),
 }
 
 /// Block cipher padding schemes.
 pub enum PaddingSchemes {
     /// PKCS#7 padding.
-    Pkcs7
+    Pkcs7,
 }
 
 /// Errors that can arise when encrypting or decrypting in CBC mode.
 enum CBCError {
     /// The initlisation vector was of the wrong length.
-    BadIVLength
+    BadIVLength,
 }
 
 impl fmt::Display for CBCError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            BadIVLength => write!(f, "Initlisation vector has the wrong size")
+            BadIVLength => write!(f, "Initlisation vector has the wrong size"),
         }
     }
 }
@@ -58,7 +58,7 @@ impl fmt::Debug for CBCError {
 impl error::Error for CBCError {
     fn description(&self) -> &str {
         match *self {
-            BadIVLength     => "invalid iv length"
+            BadIVLength => "invalid iv length",
         }
     }
 }
@@ -81,11 +81,10 @@ pub struct BlockCipher {
     /// The operation mode for this block cipher.
     mode: OperationModes,
     /// The padding scheme for this block cipher.
-    padding: PaddingSchemes
+    padding: PaddingSchemes,
 }
 
 impl BlockCipher {
-
     /// Returns a new BlockCipher which uses the given algorithm, key,
     /// operation mode and padding scheme for encryption and decryption of
     /// blocks.
@@ -99,22 +98,31 @@ impl BlockCipher {
     ///                              PaddingSchemes::Pkcs7,
     ///                              &key).unwrap();
     /// ```
-    pub fn new(algorithm: Algorithms,     mode: OperationModes,
-               padding:   PaddingSchemes, key:  &Data)
+    pub fn new(algorithm: Algorithms,
+               mode: OperationModes,
+               padding: PaddingSchemes,
+               key: &Data)
                -> Result<BlockCipher, String> {
         match algorithm {
             Algorithms::Aes => {
                 match aes::AesCipher::new(key.bytes()) {
-                    Ok(aes)  => Ok(BlockCipher{cipher: Box::new(aes),
-                                               mode: mode,
-                                               padding: padding}),
-                    Err(err) => Err(format!("{}", err))
+                    Ok(aes) => {
+                        Ok(BlockCipher {
+                            cipher: Box::new(aes),
+                            mode: mode,
+                            padding: padding,
+                        })
+                    }
+                    Err(err) => Err(format!("{}", err)),
                 }
             }
-            Algorithms::Null(size) =>
-                 Ok(BlockCipher{cipher: Box::new(null::NullCipher::new(size)),
-                                mode: mode,
-                                padding: padding})
+            Algorithms::Null(size) => {
+                Ok(BlockCipher {
+                    cipher: Box::new(null::NullCipher::new(size)),
+                    mode: mode,
+                    padding: padding,
+                })
+            }
         }
     }
 
@@ -132,14 +140,14 @@ impl BlockCipher {
     /// let output = block.encrypt(&input);
     /// ```
     pub fn encrypt(&self, input: &Data) -> Data {
-        let data; let output;
+        let data;
+        let output;
         match self.padding {
-            PaddingSchemes::Pkcs7 => data = self.pkcs7_pad(input)
+            PaddingSchemes::Pkcs7 => data = self.pkcs7_pad(input),
         }
         match self.mode {
             OperationModes::Ecb => output = self.ecb_encrypt(&data),
-            OperationModes::Cbc(ref iv) =>
-                                 output = self.cbc_encrypt(&data, &iv).unwrap()
+            OperationModes::Cbc(ref iv) => output = self.cbc_encrypt(&data, &iv).unwrap(),
         }
         output
     }
@@ -159,14 +167,14 @@ impl BlockCipher {
     /// let output = block.decrypt(&input);
     /// ```
     pub fn decrypt(&self, input: &Data) -> Data {
-        let data; let output;
+        let data;
+        let output;
         match self.mode {
             OperationModes::Ecb => data = self.ecb_decrypt(input),
-            OperationModes::Cbc(ref iv) =>
-                                  data = self.cbc_decrypt(&input, &iv).unwrap()
+            OperationModes::Cbc(ref iv) => data = self.cbc_decrypt(&input, &iv).unwrap(),
         }
         match self.padding {
-            PaddingSchemes::Pkcs7 => output = self.pkcs7_unpad(&data)
+            PaddingSchemes::Pkcs7 => output = self.pkcs7_unpad(&data),
         }
         output
     }
@@ -181,7 +189,7 @@ impl BlockCipher {
         // storing the results.
         let mut ix = 0;
         while ix + self.cipher.block_size() <= data.bytes().len() {
-            let in_block = &data.bytes()[ix .. ix + self.cipher.block_size()];
+            let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
             output.extend_from_slice(&self.cipher.encrypt(in_block));
             ix += self.cipher.block_size();
         }
@@ -199,7 +207,7 @@ impl BlockCipher {
         // storing the results.
         let mut ix = 0;
         while ix < data.bytes().len() {
-            let in_block = &data.bytes()[ix .. ix + self.cipher.block_size()];
+            let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
             output.extend_from_slice(&self.cipher.decrypt(in_block));
             ix += self.cipher.block_size();
         }
@@ -265,8 +273,7 @@ impl BlockCipher {
     fn pkcs7_pad(&self, data: &Data) -> Data {
 
         // Work out the value of the padding bytes.
-        let pad = self.cipher.block_size() -
-                                 data.bytes().len() % self.cipher.block_size();
+        let pad = self.cipher.block_size() - data.bytes().len() % self.cipher.block_size();
 
         // Construct a new Data with the padding included.
         let mut new_bytes = data.bytes().to_vec();

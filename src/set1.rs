@@ -46,7 +46,7 @@ pub fn challenge02() {
 
     // Encrypt the data.
     let data = Data::from_hex(hex).unwrap();
-    let key  = Data::from_hex(key).unwrap();
+    let key = Data::from_hex(key).unwrap();
     let result = xor::xor(&data, &key);
     println!("Encrypted output: {}", result.to_hex());
 
@@ -132,7 +132,7 @@ pub fn challenge05() {
 
     // Encrypt the data.
     let data = Data::from_text(data_text);
-    let key  = Data::from_text(key_text);
+    let key = Data::from_text(key_text);
     let result = xor::xor(&data, &key);
     println!("Encrypted output: {}", result.to_hex());
 
@@ -157,7 +157,7 @@ pub fn challenge06() {
 
     // Find the best repeating-XOR key.
     let data = Data::from_base64(&base64).unwrap();
-    let key  = attacks::xor::best_repeating_key(&data);
+    let key = attacks::xor::best_repeating_key(&data);
     println!("Key (text): {}", key.to_text());
 
     // Decrypt the data.
@@ -189,11 +189,12 @@ pub fn challenge07() {
 
     // Decrypt the data using AES-128-ECB.
     let data = Data::from_base64(&base64).unwrap();
-    let key  = Data::from_text(key);
+    let key = Data::from_text(key);
     let block = BlockCipher::new(Algorithms::Aes,
                                  OperationModes::Ecb,
                                  PaddingSchemes::Pkcs7,
-                                 &key).unwrap();
+                                 &key)
+        .unwrap();
     let plain = block.decrypt(&data);
     println!("Decrypted output: {}", plain.to_text());
 

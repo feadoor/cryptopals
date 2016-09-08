@@ -67,8 +67,7 @@ pub fn best_repeating_key(data: &Data) -> Data {
     for ix in 0..best_keysize {
 
         // Fill in the bytes of a particular stream.
-        let mut stream_bytes = Vec::with_capacity(
-                                        data.bytes().len() / best_keysize + 1);
+        let mut stream_bytes = Vec::with_capacity(data.bytes().len() / best_keysize + 1);
         let mut position = ix;
         while position < data.bytes().len() {
             stream_bytes.push(data.bytes()[position]);

@@ -12,13 +12,13 @@ use utils::data::Data;
 /// pieces of data.
 pub enum HammingDistanceError {
     /// The input data have unequal lengths.
-    UnequalLengths
+    UnequalLengths,
 }
 
 impl fmt::Display for HammingDistanceError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            UnequalLengths => write!(f, "Inputs have unequal lengths")
+            UnequalLengths => write!(f, "Inputs have unequal lengths"),
         }
     }
 }
@@ -32,7 +32,7 @@ impl fmt::Debug for HammingDistanceError {
 impl error::Error for HammingDistanceError {
     fn description(&self) -> &str {
         match *self {
-            UnequalLengths => "unequal input lengths"
+            UnequalLengths => "unequal input lengths",
         }
     }
 }
@@ -54,36 +54,36 @@ pub fn score_as_english(data: &Data) -> f64 {
     // according to how common that byte is in English text.
     for byte in data.bytes() {
         match *byte {
-            b'E' | b'e'               => score += 12.70,
-            b'T' | b't'               => score +=  9.06,
-            b'A' | b'a'               => score +=  8.17,
-            b'O' | b'o'               => score +=  7.51,
-            b'I' | b'i'               => score +=  6.97,
-            b'N' | b'n'               => score +=  6.75,
-            b'S' | b's'               => score +=  6.33,
-            b'H' | b'h'               => score +=  6.09,
-            b'R' | b'r'               => score +=  5.99,
-            b'D' | b'd'               => score +=  4.25,
-            b'L' | b'l'               => score +=  4.03,
-            b'C' | b'c'               => score +=  2.78,
-            b'U' | b'u'               => score +=  2.76,
-            b'M' | b'm'               => score +=  2.41,
-            b'W' | b'w'               => score +=  2.36,
-            b'F' | b'f'               => score +=  2.23,
-            b'G' | b'g'               => score +=  2.02,
-            b'Y' | b'y'               => score +=  1.97,
-            b'P' | b'p'               => score +=  1.93,
-            b'B' | b'b'               => score +=  1.49,
-            b'V' | b'v'               => score +=  0.98,
-            b'K' | b'k'               => score +=  0.77,
-            b'J' | b'j'               => score +=  0.15,
-            b'X' | b'x'               => score +=  0.15,
-            b'Q' | b'q'               => score +=  0.10,
-            b'Z' | b'z'               => score +=  0.07,
-            b' '                      => score +=  13.0,
-            0x21...0x40               => score +=  0.5,
+            b'E' | b'e' => score += 12.70,
+            b'T' | b't' => score += 9.06,
+            b'A' | b'a' => score += 8.17,
+            b'O' | b'o' => score += 7.51,
+            b'I' | b'i' => score += 6.97,
+            b'N' | b'n' => score += 6.75,
+            b'S' | b's' => score += 6.33,
+            b'H' | b'h' => score += 6.09,
+            b'R' | b'r' => score += 5.99,
+            b'D' | b'd' => score += 4.25,
+            b'L' | b'l' => score += 4.03,
+            b'C' | b'c' => score += 2.78,
+            b'U' | b'u' => score += 2.76,
+            b'M' | b'm' => score += 2.41,
+            b'W' | b'w' => score += 2.36,
+            b'F' | b'f' => score += 2.23,
+            b'G' | b'g' => score += 2.02,
+            b'Y' | b'y' => score += 1.97,
+            b'P' | b'p' => score += 1.93,
+            b'B' | b'b' => score += 1.49,
+            b'V' | b'v' => score += 0.98,
+            b'K' | b'k' => score += 0.77,
+            b'J' | b'j' => score += 0.15,
+            b'X' | b'x' => score += 0.15,
+            b'Q' | b'q' => score += 0.10,
+            b'Z' | b'z' => score += 0.07,
+            b' ' => score += 13.0,
+            0x21...0x40 => score += 0.5,
             0x00...0x08 | 0x14...0x1F => score += -10.0,
-            _                         => score += -1.0
+            _ => score += -1.0,
         }
     }
 
@@ -104,8 +104,7 @@ pub fn score_as_english(data: &Data) -> f64 {
 /// let data2 = Data::from_text("More text");
 /// let dist = hamming_distance(&data1, &data2).unwrap();
 /// ```
-pub fn hamming_distance(data1: &Data, data2: &Data) ->
-                                            Result<u32, HammingDistanceError> {
+pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistanceError> {
 
     // Check that the two inputs have equal sizes.
     if data1.bytes().len() != data2.bytes().len() {
@@ -175,7 +174,7 @@ pub fn is_ecb_mode(data: &Data, block_size: usize) -> bool {
     // Iterate over the data and check if each block has appeared before.
     let mut ix = 0;
     while ix + block_size <= data.bytes().len() {
-        let block = &data.bytes()[ix .. ix + block_size];
+        let block = &data.bytes()[ix..ix + block_size];
         if blocks.contains(block) {
             return true;
         }

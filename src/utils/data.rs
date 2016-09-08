@@ -16,16 +16,14 @@ pub enum FromHexError {
     /// The input contained a non-hexadecimal character.
     BadHexChar(usize, char),
     /// The input had an invalid length.
-    BadHexLength
+    BadHexLength,
 }
 
 impl fmt::Display for FromHexError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            BadHexChar(ix, ch) =>
-                write!(f, "Invalid character {} at position {}", ch, ix),
-            BadHexLength =>
-                write!(f, "Invalid input length")
+            BadHexChar(ix, ch) => write!(f, "Invalid character {} at position {}", ch, ix),
+            BadHexLength => write!(f, "Invalid input length"),
         }
     }
 }
@@ -40,7 +38,7 @@ impl error::Error for FromHexError {
     fn description(&self) -> &str {
         match *self {
             BadHexChar(_, _) => "invalid character",
-            BadHexLength     => "invalid length"
+            BadHexLength => "invalid length",
         }
     }
 }
@@ -50,16 +48,14 @@ pub enum FromBase64Error {
     /// The input contained an invalid character.
     BadBase64Char(usize, char),
     /// The input had an invalid length.
-    BadBase64Length
+    BadBase64Length,
 }
 
 impl fmt::Display for FromBase64Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            BadBase64Char(ix, ch) =>
-                write!(f, "Invalid character {} at position {}", ch, ix),
-            BadBase64Length =>
-                write!(f, "Invalid input length")
+            BadBase64Char(ix, ch) => write!(f, "Invalid character {} at position {}", ch, ix),
+            BadBase64Length => write!(f, "Invalid input length"),
         }
     }
 }
@@ -74,7 +70,7 @@ impl error::Error for FromBase64Error {
     fn description(&self) -> &str {
         match *self {
             BadBase64Char(_, _) => "invalid character",
-            BadBase64Length     => "invalid length"
+            BadBase64Length => "invalid length",
         }
     }
 }
@@ -82,11 +78,10 @@ impl error::Error for FromBase64Error {
 /// Structure which holds the contents of a message.
 pub struct Data {
     /// The message as a sequence of raw bytes.
-    bytes: Vec<u8>
+    bytes: Vec<u8>,
 }
 
 impl Data {
-
     /// Creates a new empty Data object.
     ///
     /// # Example
@@ -95,7 +90,7 @@ impl Data {
     /// let data = Data::new();
     /// ```
     pub fn new() -> Data {
-        Data{bytes: Vec::new()}
+        Data { bytes: Vec::new() }
     }
 
     /// Create a new random Data object containing the given number of bytes.
@@ -111,7 +106,7 @@ impl Data {
         for _ in 0..size {
             bytes.push(rng.gen::<u8>());
         }
-        Data{bytes: bytes}
+        Data { bytes: bytes }
     }
 
     /// Creates a new Data object from a sequence of bytes given as a
@@ -146,7 +141,7 @@ impl Data {
             let nibble = ch.to_digit(16);
             match nibble {
                 Some(val) => next_byte = (next_byte << 4) | val as u8,
-                None      => return Err(BadHexChar(ix, ch))
+                None => return Err(BadHexChar(ix, ch)),
             }
 
             // Push the next byte onto the vector if necessary.
@@ -159,8 +154,8 @@ impl Data {
 
         // Check that we have read an even number of characters in total.
         match parity {
-            0 => Ok(Data{bytes: bytes}),
-            _ => Err(BadHexLength)
+            0 => Ok(Data { bytes: bytes }),
+            _ => Err(BadHexLength),
         }
     }
 
@@ -197,13 +192,13 @@ impl Data {
                 b'A'...b'Z' => next_bytes |= (ch - b'A') as u32,
                 b'a'...b'z' => next_bytes |= (ch - b'a' + 26) as u32,
                 b'0'...b'9' => next_bytes |= (ch - b'0' + 52) as u32,
-                b'+'       => next_bytes |= (ch - b'+' + 62) as u32,
-                b'/'       => next_bytes |= (ch - b'/' + 63) as u32,
-                b'='       => {
+                b'+' => next_bytes |= (ch - b'+' + 62) as u32,
+                b'/' => next_bytes |= (ch - b'/' + 63) as u32,
+                b'=' => {
                     last_ix = ix;
                     break;
-                },
-                _          => {
+                }
+                _ => {
                     let ch = input[ix..].chars().next().unwrap();
                     return Err(BadBase64Char(ix, ch));
                 }
@@ -215,8 +210,8 @@ impl Data {
             if cycle == 4 {
                 cycle = 0;
                 bytes.push((next_bytes >> 16) as u8);
-                bytes.push((next_bytes >>  8) as u8);
-                bytes.push((next_bytes >>  0) as u8);
+                bytes.push((next_bytes >> 8) as u8);
+                bytes.push((next_bytes >> 0) as u8);
             }
         }
 
@@ -224,33 +219,33 @@ impl Data {
         // onto the end of the string.
         next_bytes >>= 6;
         match cycle {
-            0 => {},
+            0 => {}
             2 => {
                 if input[last_ix..].len() == 1 {
                     return Err(BadBase64Length);
                 }
-                if &input[last_ix..last_ix+2] != "==" {
-                    let ch = input[last_ix+1..].chars().next().unwrap();
+                if &input[last_ix..last_ix + 2] != "==" {
+                    let ch = input[last_ix + 1..].chars().next().unwrap();
                     return Err(BadBase64Char(last_ix + 1, ch));
                 }
                 if input[last_ix..].len() != 2 {
-                    let ch = input[last_ix+2..].chars().next().unwrap();
+                    let ch = input[last_ix + 2..].chars().next().unwrap();
                     return Err(BadBase64Char(last_ix + 2, ch));
                 }
                 bytes.push((next_bytes >> 4) as u8)
             }
             3 => {
                 if input[last_ix..].len() != 1 {
-                    let ch = input[last_ix+1..].chars().next().unwrap();
+                    let ch = input[last_ix + 1..].chars().next().unwrap();
                     return Err(BadBase64Char(last_ix + 1, ch));
                 }
                 bytes.push((next_bytes >> 10) as u8);
-                bytes.push((next_bytes >>  2) as u8)
+                bytes.push((next_bytes >> 2) as u8)
             }
-            _ => return Err(BadBase64Char(last_ix, '='))
+            _ => return Err(BadBase64Char(last_ix, '=')),
         }
 
-        Ok(Data{bytes: bytes})
+        Ok(Data { bytes: bytes })
     }
 
     /// Creates a new Data object from a sequence of byte values represented
@@ -262,7 +257,7 @@ impl Data {
     /// let data = Data::from_text("Some text");
     /// ```
     pub fn from_text(input: &str) -> Data {
-        Data{bytes: input.as_bytes().to_vec()}
+        Data { bytes: input.as_bytes().to_vec() }
     }
 
     /// Creates a new Data object from a sequence of raw byte values.
@@ -273,7 +268,7 @@ impl Data {
     /// let data = Data::from_bytes(vec![100, 97, 119]);
     /// ```
     pub fn from_bytes(input: Vec<u8>) -> Data {
-        Data{bytes: input}
+        Data { bytes: input }
     }
 
     /// Creates a new Data object representing a single byte.
@@ -284,7 +279,7 @@ impl Data {
     /// let data = Data::from_single_byte(100);
     /// ```
     pub fn from_single_byte(input: u8) -> Data {
-        Data{bytes: vec![input]}
+        Data { bytes: vec![input] }
     }
 
     /// Returns the message as a hexadecimal string.
@@ -344,15 +339,15 @@ impl Data {
             if cycle == 3 {
                 out_chars.push(b64_chars[((sextets >> 18) & 0x3F) as usize]);
                 out_chars.push(b64_chars[((sextets >> 12) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >>  6) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >>  0) & 0x3F) as usize]);
+                out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
+                out_chars.push(b64_chars[((sextets >> 0) & 0x3F) as usize]);
                 cycle = 0;
             }
         }
 
         // Deal with padding and the last few bytes if necessary
         match cycle {
-            0 => {},
+            0 => {}
             1 => {
                 sextets <<= 4;
                 out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
@@ -363,11 +358,11 @@ impl Data {
             2 => {
                 sextets <<= 2;
                 out_chars.push(b64_chars[((sextets >> 12) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >>  6) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >>  0) & 0x3F) as usize]);
+                out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
+                out_chars.push(b64_chars[((sextets >> 0) & 0x3F) as usize]);
                 out_chars.push(b'=');
             }
-            _ => panic!("Maths is broken, the end is nigh")
+            _ => panic!("Maths is broken, the end is nigh"),
         }
 
         // Turn the output into a String before returning it.
@@ -408,7 +403,7 @@ impl Data {
     /// let slice = data.slice(3, 7);
     /// ```
     pub fn slice(&self, start: usize, end: usize) -> Data {
-        Data{bytes: self.bytes[start..end].to_vec()}
+        Data { bytes: self.bytes[start..end].to_vec() }
     }
 
     /// Returns a clone of this Data.
@@ -420,6 +415,6 @@ impl Data {
     /// let other = data.clone();
     /// ```
     pub fn clone(&self) -> Data {
-        Data{bytes: self.bytes().to_vec()}
+        Data { bytes: self.bytes().to_vec() }
     }
 }
