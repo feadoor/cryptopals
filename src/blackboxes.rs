@@ -66,23 +66,22 @@ impl EcbOrCbc {
         let noisy_data = Data::from_bytes(noisy_input);
 
         // Create the BlockCipher to perform the encryption. Generate a random IV for CBC mode.
-        let block;
-        if ecb {
+        let block = if ecb {
             self.last_mode = OperationModes::Ecb;
-            block = BlockCipher::new(Algorithms::Aes,
-                                     OperationModes::Ecb,
-                                     PaddingSchemes::Pkcs7,
-                                     &key)
-                .unwrap();
+            BlockCipher::new(Algorithms::Aes,
+                             OperationModes::Ecb,
+                             PaddingSchemes::Pkcs7,
+                             &key)
+                .unwrap()
         } else {
             let iv = Data::random(16);
             self.last_mode = OperationModes::Cbc(iv.clone());
-            block = BlockCipher::new(Algorithms::Aes,
-                                     OperationModes::Cbc(iv),
-                                     PaddingSchemes::Pkcs7,
-                                     &key)
-                .unwrap();
-        }
+            BlockCipher::new(Algorithms::Aes,
+                             OperationModes::Cbc(iv),
+                             PaddingSchemes::Pkcs7,
+                             &key)
+                .unwrap()
+        };
 
         // Return the encrypted Data.
         block.encrypt(&noisy_data)
@@ -104,6 +103,12 @@ impl EcbOrCbc {
             OperationModes::Ecb => is_ecb,
             _ => !is_ecb,
         }
+    }
+}
+
+impl Default for EcbOrCbc {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -159,8 +164,8 @@ impl EcbWithSuffix {
     pub fn encrypt(&self, input: &Data) -> Data {
         let new_input_size = input.bytes().len() + self.suffix.bytes().len();
         let mut new_input_bytes = Vec::with_capacity(new_input_size);
-        new_input_bytes.extend_from_slice(&input.bytes());
-        new_input_bytes.extend_from_slice(&self.suffix.bytes());
+        new_input_bytes.extend_from_slice(input.bytes());
+        new_input_bytes.extend_from_slice(self.suffix.bytes());
         let new_input = Data::from_bytes(new_input_bytes);
 
         self.block.encrypt(&new_input)

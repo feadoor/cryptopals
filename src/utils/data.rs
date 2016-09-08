@@ -76,6 +76,7 @@ impl error::Error for FromBase64Error {
 }
 
 /// Structure which holds the contents of a message.
+#[derive(Default,Clone)]
 pub struct Data {
     /// The message as a sequence of raw bytes.
     bytes: Vec<u8>,
@@ -140,7 +141,7 @@ impl Data {
             }
 
             // Push the next byte onto the vector if necessary.
-            parity = parity + 1;
+            parity += 1;
             if parity == 2 {
                 parity = 0;
                 bytes.push(next_byte);
@@ -203,7 +204,7 @@ impl Data {
                 cycle = 0;
                 bytes.push((next_bytes >> 16) as u8);
                 bytes.push((next_bytes >> 8) as u8);
-                bytes.push((next_bytes >> 0) as u8);
+                bytes.push(next_bytes as u8);
             }
         }
 
@@ -329,7 +330,7 @@ impl Data {
                 out_chars.push(b64_chars[((sextets >> 18) & 0x3F) as usize]);
                 out_chars.push(b64_chars[((sextets >> 12) & 0x3F) as usize]);
                 out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >> 0) & 0x3F) as usize]);
+                out_chars.push(b64_chars[(sextets & 0x3F) as usize]);
                 cycle = 0;
             }
         }
@@ -340,7 +341,7 @@ impl Data {
             1 => {
                 sextets <<= 4;
                 out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >> 0) & 0x3F) as usize]);
+                out_chars.push(b64_chars[(sextets & 0x3F) as usize]);
                 out_chars.push(b'=');
                 out_chars.push(b'=');
             }
@@ -348,7 +349,7 @@ impl Data {
                 sextets <<= 2;
                 out_chars.push(b64_chars[((sextets >> 12) & 0x3F) as usize]);
                 out_chars.push(b64_chars[((sextets >> 6) & 0x3F) as usize]);
-                out_chars.push(b64_chars[((sextets >> 0) & 0x3F) as usize]);
+                out_chars.push(b64_chars[(sextets & 0x3F) as usize]);
                 out_chars.push(b'=');
             }
             _ => panic!("Maths is broken, the end is nigh"),
@@ -392,17 +393,5 @@ impl Data {
     /// ```
     pub fn slice(&self, start: usize, end: usize) -> Data {
         Data { bytes: self.bytes[start..end].to_vec() }
-    }
-
-    /// Returns a clone of this Data.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data  = Data::from_text("Some text");
-    /// let other = data.clone();
-    /// ```
-    pub fn clone(&self) -> Data {
-        Data { bytes: self.bytes().to_vec() }
     }
 }

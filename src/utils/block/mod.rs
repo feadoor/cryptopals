@@ -137,16 +137,13 @@ impl BlockCipher {
     /// let output = block.encrypt(&input);
     /// ```
     pub fn encrypt(&self, input: &Data) -> Data {
-        let data;
-        let output;
-        match self.padding {
-            PaddingSchemes::Pkcs7 => data = self.pkcs7_pad(input),
-        }
+        let data = match self.padding {
+            PaddingSchemes::Pkcs7 => self.pkcs7_pad(input),
+        };
         match self.mode {
-            OperationModes::Ecb => output = self.ecb_encrypt(&data),
-            OperationModes::Cbc(ref iv) => output = self.cbc_encrypt(&data, &iv).unwrap(),
+            OperationModes::Ecb => self.ecb_encrypt(&data),
+            OperationModes::Cbc(ref iv) => self.cbc_encrypt(&data, iv).unwrap(),
         }
-        output
     }
 
     /// Decrypts the given input data using the given mode of operation.
@@ -164,16 +161,13 @@ impl BlockCipher {
     /// let output = block.decrypt(&input);
     /// ```
     pub fn decrypt(&self, input: &Data) -> Data {
-        let data;
-        let output;
-        match self.mode {
-            OperationModes::Ecb => data = self.ecb_decrypt(input),
-            OperationModes::Cbc(ref iv) => data = self.cbc_decrypt(&input, &iv).unwrap(),
-        }
+        let data = match self.mode {
+            OperationModes::Ecb => self.ecb_decrypt(input),
+            OperationModes::Cbc(ref iv) => self.cbc_decrypt(input, iv).unwrap(),
+        };
         match self.padding {
-            PaddingSchemes::Pkcs7 => output = self.pkcs7_unpad(&data),
+            PaddingSchemes::Pkcs7 => self.pkcs7_unpad(&data),
         }
-        output
     }
 
     /// Encrypts the given data using ECB mode.

@@ -26,7 +26,7 @@ pub fn best_single_byte_key(data: &Data) -> (Data, f64) {
     // score.
     for key_byte in 0..256 {
         let key = Data::from_single_byte(key_byte as u8);
-        let score = metrics::score_as_english(&xor(&data, &key));
+        let score = metrics::score_as_english(&xor(data, &key));
         if score > best_score {
             best_key = key;
             best_score = score;
@@ -52,7 +52,7 @@ pub fn best_repeating_key(data: &Data) -> Data {
     // First find the most likely key size.
     let (mut best_keysize, mut best_score) = (0, f64::INFINITY);
     for keysize in 2..40 {
-        let score = metrics::score_xor_keysize(&data, keysize);
+        let score = metrics::score_xor_keysize(data, keysize);
         if score < best_score {
             best_keysize = keysize;
             best_score = score;

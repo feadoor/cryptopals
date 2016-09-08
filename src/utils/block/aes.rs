@@ -13,7 +13,7 @@ use utils::block::Cipher;
 static RCON: [u32; 10] = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000,
                           0x40000000, 0x80000000, 0x1b000000, 0x36000000];
 
-/// The S-box for the SubBytes transformation.
+/// The S-box for the `SubBytes` transformation.
 static SBOX: [u8; 256] =
     [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab,
      0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4,
@@ -34,7 +34,7 @@ static SBOX: [u8; 256] =
      0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb,
      0x16];
 
-/// The inverse S-box for the InvSubBytes transformation.
+/// The inverse S-box for the `InvSubBytes` transformation.
 static INV_SBOX: [u8; 256] =
     [0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7,
      0xfb, 0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde,
@@ -55,7 +55,7 @@ static INV_SBOX: [u8; 256] =
      0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c,
      0x7d];
 
-/// The table T0, used for fast encryption rounds.
+/// The table `T0`, used for fast encryption rounds.
 ///
 /// See section 5.2.1 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static T0: [u32; 256] =
@@ -97,7 +97,7 @@ static T0: [u32; 256] =
      0xd7e6e631, 0x844242c6, 0xd06868b8, 0x824141c3, 0x299999b0, 0x5a2d2d77, 0x1e0f0f11,
      0x7bb0b0cb, 0xa85454fc, 0x6dbbbbd6, 0x2c16163a];
 
-/// The table T1, used for fast encryption rounds.
+/// The table `T1`, used for fast encryption rounds.
 ///
 /// See section 5.2.1 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static T1: [u32; 256] =
@@ -139,7 +139,7 @@ static T1: [u32; 256] =
      0x31d7e6e6, 0xc6844242, 0xb8d06868, 0xc3824141, 0xb0299999, 0x775a2d2d, 0x111e0f0f,
      0xcb7bb0b0, 0xfca85454, 0xd66dbbbb, 0x3a2c1616];
 
-/// The table T2, used for fast encryption rounds.
+/// The table `T2`, used for fast encryption rounds.
 ///
 /// See section 5.2.1 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static T2: [u32; 256] =
@@ -181,7 +181,7 @@ static T2: [u32; 256] =
      0xe631d7e6, 0x42c68442, 0x68b8d068, 0x41c38241, 0x99b02999, 0x2d775a2d, 0x0f111e0f,
      0xb0cb7bb0, 0x54fca854, 0xbbd66dbb, 0x163a2c16];
 
-/// The table T3, used for fast encryption rounds.
+/// The table `T3`, used for fast encryption rounds.
 ///
 /// See section 5.2.1 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static T3: [u32; 256] =
@@ -223,7 +223,7 @@ static T3: [u32; 256] =
      0xe6e631d7, 0x4242c684, 0x6868b8d0, 0x4141c382, 0x9999b029, 0x2d2d775a, 0x0f0f111e,
      0xb0b0cb7b, 0x5454fca8, 0xbbbbd66d, 0x16163a2c];
 
-/// The table INV_T0, used for fast decryption rounds.
+/// The table `INV_T0`, used for fast decryption rounds.
 ///
 /// See section 5.3.4.2 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_T0: [u32; 256] =
@@ -265,7 +265,7 @@ static INV_T0: [u32; 256] =
      0xbce2250c, 0x283c498b, 0xff0d9541, 0x39a80171, 0x080cb3de, 0xd8b4e49c, 0x6456c190,
      0x7bcb8461, 0xd532b670, 0x486c5c74, 0xd0b85742];
 
-/// The table INV_T1, used for fast decryption rounds.
+/// The table `INV_T1`, used for fast decryption rounds.
 ///
 /// See section 5.3.4.2 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_T1: [u32; 256] =
@@ -307,7 +307,7 @@ static INV_T1: [u32; 256] =
      0x0cbce225, 0x8b283c49, 0x41ff0d95, 0x7139a801, 0xde080cb3, 0x9cd8b4e4, 0x906456c1,
      0x617bcb84, 0x70d532b6, 0x74486c5c, 0x42d0b857];
 
-/// The table INV_T2, used for fast decryption rounds.
+/// The table `INV_T2`, used for fast decryption rounds.
 ///
 /// See section 5.3.4.2 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_T2: [u32; 256] =
@@ -349,7 +349,7 @@ static INV_T2: [u32; 256] =
      0x250cbce2, 0x498b283c, 0x9541ff0d, 0x017139a8, 0xb3de080c, 0xe49cd8b4, 0xc1906456,
      0x84617bcb, 0xb670d532, 0x5c74486c, 0x5742d0b8];
 
-/// The table INV_T3, used for fast decryption rounds.
+/// The table `INV_T3`, used for fast decryption rounds.
 ///
 /// See section 5.3.4.2 of http://csrc.nist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_T3: [u32; 256] =
@@ -391,7 +391,7 @@ static INV_T3: [u32; 256] =
      0xe2250cbc, 0x3c498b28, 0x0d9541ff, 0xa8017139, 0x0cb3de08, 0xb4e49cd8, 0x56c19064,
      0xcb84617b, 0x32b670d5, 0x6c5c7448, 0xb85742d0];
 
-/// The table INV_MCOL0, used for performing InvMixCols during the key schedule.
+/// The table `INV_MCOL0`, used for performing `InvMixCols` during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL0: [u32; 256] =
@@ -433,7 +433,7 @@ static INV_MCOL0: [u32; 256] =
      0xe11ce5ed, 0xf307f2f0, 0xfd0efffb, 0xa779b492, 0xa970b999, 0xbb6bae84, 0xb562a38f,
      0x9f5d80be, 0x91548db5, 0x834f9aa8, 0x8d4697a3];
 
-/// The table INV_MCOL1, used for performing InvMixCols during the key schedule.
+/// The table `INV_MCOL1`, used for performing `InvMixCols` during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL1: [u32; 256] =
@@ -475,7 +475,7 @@ static INV_MCOL1: [u32; 256] =
      0xede11ce5, 0xf0f307f2, 0xfbfd0eff, 0x92a779b4, 0x99a970b9, 0x84bb6bae, 0x8fb562a3,
      0xbe9f5d80, 0xb591548d, 0xa8834f9a, 0xa38d4697];
 
-/// The table INV_MCOL2, used for performing InvMixCols during the key schedule.
+/// The table `INV_MCOL2`, used for performing `InvMixCols` during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL2: [u32; 256] =
@@ -517,7 +517,7 @@ static INV_MCOL2: [u32; 256] =
      0xe5ede11c, 0xf2f0f307, 0xfffbfd0e, 0xb492a779, 0xb999a970, 0xae84bb6b, 0xa38fb562,
      0x80be9f5d, 0x8db59154, 0x9aa8834f, 0x97a38d46];
 
-/// The table INV_MCOL3, used for performing InvMixCols during the key schedule.
+/// The table `INV_MCOL3`, used for performing `InvMixCols` during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL3: [u32; 256] =
@@ -595,6 +595,11 @@ pub struct AesCipher {
     pub inv_round_keys: Vec<u32>,
 }
 
+/// Create a word from four individual bytes.
+fn word_from_bytes(byte1: u8, byte2: u8, byte3: u8, byte4: u8) -> u32 {
+    (byte1 as u32) << 24 | (byte2 as u32) << 16 | (byte3 as u32) << 8 | (byte4 as u32)
+}
+
 impl AesCipher {
     /// Creates a new AesCipher which uses the given key for encryption and decryption of blocks
     /// of data.
@@ -613,10 +618,10 @@ impl AesCipher {
 
         // Copy in the words of the key directly for the first few round keys.
         for ix in 0..key_words {
-            round_keys.push(((key[4 * ix + 0] as u32) << 24) |
-                            ((key[4 * ix + 1] as u32) << 16) |
-                            ((key[4 * ix + 2] as u32) << 8) |
-                            ((key[4 * ix + 3] as u32) << 0));
+            round_keys.push(word_from_bytes(key[4 * ix],
+                                            key[4 * ix + 1],
+                                            key[4 * ix + 2],
+                                            key[4 * ix + 3]));
         }
 
         // Generate the round keys for the subsequent rounds using the key schedule algorithm.
@@ -624,17 +629,17 @@ impl AesCipher {
             let mut tmp = round_keys[ix - 1];
             if (ix % key_words) == 0 {
                 // tmp = sub_word(rot_word(tmp)) ^ RCON[i / key_words]
-                tmp = (((SBOX[(tmp >> 24) as u8 as usize]) as u32) << 0) |
-                      (((SBOX[(tmp >> 0) as u8 as usize]) as u32) << 8) |
-                      (((SBOX[(tmp >> 8) as u8 as usize]) as u32) << 16) |
-                      (((SBOX[(tmp >> 16) as u8 as usize]) as u32) << 24);
+                tmp = word_from_bytes(SBOX[(tmp >> 16) as u8 as usize],
+                                      SBOX[(tmp >> 8) as u8 as usize],
+                                      SBOX[tmp as u8 as usize],
+                                      SBOX[(tmp >> 24) as u8 as usize]);
                 tmp ^= RCON[(ix / key_words) - 1];
             } else if (key_words == 8) && (ix % key_words == 4) {
                 // tmp = sub_word(tmp)
-                tmp = (((SBOX[(tmp >> 0) as u8 as usize]) as u32) << 0) |
-                      (((SBOX[(tmp >> 8) as u8 as usize]) as u32) << 8) |
-                      (((SBOX[(tmp >> 16) as u8 as usize]) as u32) << 16) |
-                      (((SBOX[(tmp >> 24) as u8 as usize]) as u32) << 24);
+                tmp = word_from_bytes(SBOX[(tmp >> 24) as u8 as usize],
+                                      SBOX[(tmp >> 16) as u8 as usize],
+                                      SBOX[(tmp >> 8) as u8 as usize],
+                                      SBOX[tmp as u8 as usize]);
             }
             let word = round_keys[ix - key_words];
             round_keys.push(word ^ tmp);
@@ -643,12 +648,11 @@ impl AesCipher {
         // Now generate the round keys for the inverse cipher by applying the InvMixCols
         // transformation to the forward keys.
         let mut inv_round_keys = round_keys.clone();
-        for ix in 4..4 * num_rounds {
-            let key = inv_round_keys[ix];
-            inv_round_keys[ix] = INV_MCOL0[(key >> 24) as u8 as usize] ^
-                                 INV_MCOL1[(key >> 16) as u8 as usize] ^
-                                 INV_MCOL2[(key >> 8) as u8 as usize] ^
-                                 INV_MCOL3[(key >> 0) as u8 as usize];
+        for key in inv_round_keys.iter_mut().take(4 * num_rounds).skip(4) {
+            *key = INV_MCOL0[(*key >> 24) as u8 as usize] ^
+                   INV_MCOL1[(*key >> 16) as u8 as usize] ^
+                   INV_MCOL2[(*key >> 8) as u8 as usize] ^
+                   INV_MCOL3[*key as u8 as usize];
         }
 
         Ok(AesCipher {
@@ -668,26 +672,26 @@ impl Cipher for AesCipher {
         let mut state = Vec::with_capacity(4);
 
         for ix in 0..4 {
-            state.push(((input[4 * ix + 0] as u32) << 24) |
-                       ((input[4 * ix + 1] as u32) << 16) |
-                       ((input[4 * ix + 2] as u32) << 8) |
-                       ((input[4 * ix + 3] as u32) << 0));
+            state.push(word_from_bytes(input[4 * ix],
+                                       input[4 * ix + 1],
+                                       input[4 * ix + 2],
+                                       input[4 * ix + 3]));
         }
 
         // Do the initial round-key addition.
-        for ix in 0..4 {
-            state[ix] ^= self.round_keys[ix];
+        for (ix, word) in state.iter_mut().enumerate() {
+            *word ^= self.round_keys[ix];
         }
 
         // Perform all but the last round of encryption. Use the T-tables to run these rounds
         // quickly.
         for round in 1..(self.round_keys.len() / 4 - 1) {
-            for ix in 0..4 {
-                dummy[ix] = T0[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^
-                            T1[(state[(ix + 1) % 4] >> 16) as u8 as usize] ^
-                            T2[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^
-                            T3[(state[(ix + 3) % 4] >> 0) as u8 as usize] ^
-                            self.round_keys[4 * round + ix];
+            for (ix, word) in dummy.iter_mut().enumerate() {
+                *word = T0[(state[ix % 4] >> 24) as u8 as usize] ^
+                        T1[(state[(ix + 1) % 4] >> 16) as u8 as usize] ^
+                        T2[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^
+                        T3[state[(ix + 3) % 4] as u8 as usize] ^
+                        self.round_keys[4 * round + ix];
             }
             for ix in 0..4 {
                 state[ix] = dummy[ix];
@@ -699,10 +703,10 @@ impl Cipher for AesCipher {
         let mut output = Vec::with_capacity(16);
         for ix in 0..4 {
             let key = self.round_keys[self.round_keys.len() - 4 + ix];
-            output.push(SBOX[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^ (key >> 24) as u8);
+            output.push(SBOX[(state[ix % 4] >> 24) as u8 as usize] ^ (key >> 24) as u8);
             output.push(SBOX[(state[(ix + 1) % 4] >> 16) as u8 as usize] ^ (key >> 16) as u8);
             output.push(SBOX[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^ (key >> 8) as u8);
-            output.push(SBOX[(state[(ix + 3) % 4] >> 0) as u8 as usize] ^ (key >> 0) as u8);
+            output.push(SBOX[state[(ix + 3) % 4] as u8 as usize] ^ key as u8);
         }
 
         output
@@ -717,26 +721,26 @@ impl Cipher for AesCipher {
         let mut state = Vec::with_capacity(4);
 
         for ix in 0..4 {
-            state.push(((input[4 * ix + 0] as u32) << 24) |
-                       ((input[4 * ix + 1] as u32) << 16) |
-                       ((input[4 * ix + 2] as u32) << 8) |
-                       ((input[4 * ix + 3] as u32) << 0));
+            state.push(word_from_bytes(input[4 * ix],
+                                       input[4 * ix + 1],
+                                       input[4 * ix + 2],
+                                       input[4 * ix + 3]));
         }
 
         // Do the initial round-key addition.
-        for ix in 0..4 {
-            state[ix] ^= self.inv_round_keys[self.inv_round_keys.len() - 4 + ix];
+        for (ix, word) in state.iter_mut().enumerate() {
+            *word ^= self.inv_round_keys[self.inv_round_keys.len() - 4 + ix];
         }
 
         // Perform all but the last round of decryption. Use the T-tables to run these rounds
         // quickly.
         for round in 1..(self.round_keys.len() / 4 - 1) {
-            for ix in 0..4 {
-                dummy[ix] = INV_T0[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^
-                            INV_T1[(state[(ix + 3) % 4] >> 16) as u8 as usize] ^
-                            INV_T2[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^
-                            INV_T3[(state[(ix + 1) % 4] >> 0) as u8 as usize] ^
-                            self.inv_round_keys[self.inv_round_keys.len() - 4 * (round + 1) + ix];
+            for (ix, word) in dummy.iter_mut().enumerate() {
+                *word = INV_T0[(state[ix % 4] >> 24) as u8 as usize] ^
+                        INV_T1[(state[(ix + 3) % 4] >> 16) as u8 as usize] ^
+                        INV_T2[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^
+                        INV_T3[state[(ix + 1) % 4] as u8 as usize] ^
+                        self.inv_round_keys[self.inv_round_keys.len() - 4 * (round + 1) + ix];
             }
             for ix in 0..4 {
                 state[ix] = dummy[ix];
@@ -748,10 +752,10 @@ impl Cipher for AesCipher {
         let mut output = Vec::with_capacity(16);
         for ix in 0..4 {
             let key = self.inv_round_keys[ix];
-            output.push(INV_SBOX[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^ (key >> 24) as u8);
+            output.push(INV_SBOX[(state[ix % 4] >> 24) as u8 as usize] ^ (key >> 24) as u8);
             output.push(INV_SBOX[(state[(ix + 3) % 4] >> 16) as u8 as usize] ^ (key >> 16) as u8);
             output.push(INV_SBOX[(state[(ix + 2) % 4] >> 8) as u8 as usize] ^ (key >> 8) as u8);
-            output.push(INV_SBOX[(state[(ix + 1) % 4] >> 0) as u8 as usize] ^ (key >> 0) as u8);
+            output.push(INV_SBOX[state[(ix + 1) % 4] as u8 as usize] ^ key as u8);
         }
 
         output
