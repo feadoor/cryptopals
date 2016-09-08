@@ -1,5 +1,5 @@
-//! Structure to hold the contents of a message, supporting input and output
-//! of messages in a variety of formats.
+//! Structure to hold the contents of a message, supporting input and output of messages in a
+//! variety of formats.
 
 use self::FromHexError::*;
 use self::FromBase64Error::*;
@@ -109,16 +109,13 @@ impl Data {
         Data { bytes: bytes }
     }
 
-    /// Creates a new Data object from a sequence of bytes given as a
-    /// hexadecimal string.
+    /// Creates a new Data object from a sequence of bytes given as a hexadecimal string.
     ///
     /// # Errors
     ///
-    /// Returns `Err(BadHexChar)` if the input contained a non-hexadecimal
-    /// character.
+    /// Returns `Err(BadHexChar)` if the input contained a non-hexadecimal character.
     ///
-    /// Returns `Err(BadHexLength)` if the input did not split exactly into
-    /// a sequence of bytes.
+    /// Returns `Err(BadHexLength)` if the input did not split exactly into a sequence of bytes.
     ///
     /// # Example
     ///
@@ -127,12 +124,10 @@ impl Data {
     /// ```
     pub fn from_hex(input: &str) -> Result<Data, FromHexError> {
 
-        // Create a new vector which is capable of holding the sequence of
-        // bytes which we parse.
+        // Create a new vector which is capable of holding the sequence of bytes which we parse.
         let mut bytes = Vec::with_capacity(input.len() / 2);
 
-        // Iterate over the characters of the input string, parsing them in
-        // pairs.
+        // Iterate over the characters of the input string, parsing them in pairs.
         let mut next_byte: u8 = 0;
         let mut parity = 0;
         for (ix, ch) in input.chars().enumerate() {
@@ -174,19 +169,17 @@ impl Data {
     /// ```
     pub fn from_base64(input: &str) -> Result<Data, FromBase64Error> {
 
-        // Create a new vector which is capable of holding the sequence of
-        // bytes which is produced.
+        // Create a new vector which is capable of holding the sequence of bytes which is produced.
         let mut bytes = Vec::with_capacity(3 * input.len() / 4);
 
-        // Iterate over the characters of the input string, parsing them in
-        // groups of four.
+        // Iterate over the characters of the input string, parsing them in groups of four.
         let mut next_bytes: u32 = 0;
         let mut cycle = 0;
         let mut last_ix = 0;
         for (ix, ch) in input.bytes().enumerate() {
 
-            // Read the character and convert it to a sextet to be stored on
-            // the end of `next_bytes`.
+            // Read the character and convert it to a sextet to be stored on the end of
+            // `next_bytes`.
             next_bytes <<= 6;
             match ch {
                 b'A'...b'Z' => next_bytes |= (ch - b'A') as u32,
@@ -204,8 +197,7 @@ impl Data {
                 }
             }
 
-            // Push the resulting bytes onto the end of the `bytes` vector
-            // if necessary.
+            // Push the resulting bytes onto the end of the `bytes` vector if necessary.
             cycle += 1;
             if cycle == 4 {
                 cycle = 0;
@@ -215,8 +207,8 @@ impl Data {
             }
         }
 
-        // Check that the padding is well-formed, and push the last few bytes
-        // onto the end of the string.
+        // Check that the padding is well-formed, and push the last few bytes onto the end of the
+        // string.
         next_bytes >>= 6;
         match cycle {
             0 => {}
@@ -248,8 +240,8 @@ impl Data {
         Ok(Data { bytes: bytes })
     }
 
-    /// Creates a new Data object from a sequence of byte values represented
-    /// as a plain text string.
+    /// Creates a new Data object from a sequence of byte values represented as a plain text
+    /// string.
     ///
     /// # Example
     ///
@@ -295,12 +287,11 @@ impl Data {
         // Create a mapping from nibbles to hex characters.
         let hex_chars = b"0123456789abcdef";
 
-        // Create a vector which will hold the byte-values of the characters
-        // that should appear in the hexadecimal representation.
+        // Create a vector which will hold the byte-values of the characters that should appear
+        // in the hexadecimal representation.
         let mut out_chars = Vec::with_capacity(self.bytes.len() / 2);
 
-        // Iterate over the bytes of the message and find the hexadecimal
-        // equivalent.
+        // Iterate over the bytes of the message and find the hexadecimal equivalent.
         for byte in &self.bytes {
             out_chars.push(hex_chars[(byte >> 4) as usize]);
             out_chars.push(hex_chars[(byte & 0xF) as usize]);
@@ -321,16 +312,14 @@ impl Data {
     pub fn to_base64(&self) -> String {
 
         // Create a mapping from sextets to base-64 characters.
-        let b64_chars = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                          abcdefghijklmnopqrstuvwxyz\
-                          0123456789+/";
+        let b64_chars = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-        // Create a vector which will hold the byte-values of the characters
-        // that should appear in the base-64 representation.
+        // Create a vector which will hold the byte-values of the characters that should appear in
+        // the base-64 representation.
         let mut out_chars = Vec::with_capacity((self.bytes.len() + 2) / 3 * 4);
 
-        // Iterate over the bytes of the message, taking them in groups of
-        // three to produce four characters of output.
+        // Iterate over the bytes of the message, taking them in groups of three to produce four
+        // characters of output.
         let mut cycle = 0;
         let mut sextets: u32 = 0;
         for byte in &self.bytes {
@@ -393,8 +382,7 @@ impl Data {
         &self.bytes
     }
 
-    /// Returns a new Data formed of a slice of the sequence of bytes stored
-    /// in this Data.
+    /// Returns a new Data formed of a slice of the sequence of bytes stored in this Data.
     ///
     /// # Example
     ///

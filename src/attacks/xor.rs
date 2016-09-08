@@ -6,8 +6,7 @@ use utils::data::Data;
 use utils::metrics;
 use utils::xor::xor;
 
-/// Finds the most likely single-byte key that was used to encrypt the given
-/// data.
+/// Finds the most likely single-byte key that was used to encrypt the given data.
 ///
 /// # Example
 ///
@@ -23,8 +22,8 @@ pub fn best_single_byte_key(data: &Data) -> (Data, f64) {
     // Keep track of the best key so far
     let (mut best_key, mut best_score) = (Data::new(), 0.0);
 
-    // Iterate over every possible byte for the key, and compare its score
-    // with the current best score.
+    // Iterate over every possible byte for the key, and compare its score with the current best
+    // score.
     for key_byte in 0..256 {
         let key = Data::from_single_byte(key_byte as u8);
         let score = metrics::score_as_english(&xor(&data, &key));
@@ -37,8 +36,7 @@ pub fn best_single_byte_key(data: &Data) -> (Data, f64) {
     (best_key, best_score)
 }
 
-/// Finds the most likely repeating-XOR key that was used to encrypt the given
-/// data.
+/// Finds the most likely repeating-XOR key that was used to encrypt the given data.
 ///
 /// # Example
 ///
@@ -61,8 +59,8 @@ pub fn best_repeating_key(data: &Data) -> Data {
         }
     }
 
-    // Now split the data into `keysize` streams and solve each one as if it
-    // were encrypted using single-byte XOR.
+    // Now split the data into `keysize` streams and solve each one as if it were encrypted using
+    // single-byte XOR.
     let mut key_bytes = Vec::with_capacity(best_keysize);
     for ix in 0..best_keysize {
 

@@ -1,5 +1,4 @@
-//! Black-box implementations of cryptographic algorithms, as
-//! described in individual challenges.
+//! Black-box implementations of cryptographic algorithms, as described in individual challenges.
 //!
 //! These black boxes will often be the target of cryptographic attacks.
 
@@ -9,8 +8,10 @@ use rand::Rng;
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 
-/// A black box which encrypts some input data using either ECB or CBC against
-/// an unknown key, and with some random noise added to both ends of the input.
+/// Encrypts data under a random choice of ECB or CBC.
+///
+/// A black box which encrypts some input data using either ECB or CBC against an unknown key, and
+/// with some random noise added to both ends of the input.
 ///
 /// # Goal
 ///
@@ -34,8 +35,8 @@ impl EcbOrCbc {
 
     /// Encrypt the input data.
     ///
-    /// Choose ECB or CBC mode at random, and generate some random noise to go
-    /// on either end of the plaintext before encryption.
+    /// Choose ECB or CBC mode at random, and generate some random noise to go on either end of the
+    /// plaintext before encryption.
     ///
     /// # Example
     ///
@@ -64,8 +65,7 @@ impl EcbOrCbc {
         noisy_input.extend_from_slice(after_data.bytes());
         let noisy_data = Data::from_bytes(noisy_input);
 
-        // Create the BlockCipher to perform the encryption. Generate a random
-        // IV for CBC mode.
+        // Create the BlockCipher to perform the encryption. Generate a random IV for CBC mode.
         let block;
         if ecb {
             self.last_mode = OperationModes::Ecb;
@@ -88,8 +88,8 @@ impl EcbOrCbc {
         block.encrypt(&noisy_data)
     }
 
-    /// Check the given answer concerning whether or not the previous text was
-    /// encrypted using ECB mode.
+    /// Check the given answer concerning whether or not the previous text was encrypted using ECB
+    /// mode.
     ///
     /// # Example
     ///
@@ -107,8 +107,10 @@ impl EcbOrCbc {
     }
 }
 
-/// A black box which encrypts some input data by appending a fixed, unknown
-/// suffix, and then encrypts under ECB mode with a fixed, unknown key.
+/// Encrypts data under ECB after adding a suffix.
+///
+/// A black box which encrypts some input data by appending a fixed, unknown suffix, and then
+/// encrypts under ECB mode with a fixed, unknown key.
 ///
 /// # Goal
 ///
@@ -144,8 +146,7 @@ impl EcbWithSuffix {
 
     /// Encrypts the input data.
     ///
-    /// First appends the suffix to the given data, then encrypts under ECB
-    /// mode.
+    /// First appends the suffix to the given data, then encrypts under ECB mode.
     ///
     /// # Example
     ///

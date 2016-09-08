@@ -7,8 +7,7 @@ use std::error;
 
 use utils::block::Cipher;
 
-// Lookup tables for use in the AES encryption, decryption and key-schedule
-// algorithms.
+// Lookup tables for use in the AES encryption, decryption and key-schedule algorithms.
 
 /// RCON values for the key schedule.
 static RCON: [u32; 10] = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000,
@@ -392,7 +391,7 @@ static INV_T3: [u32; 256] =
      0xe2250cbc, 0x3c498b28, 0x0d9541ff, 0xa8017139, 0x0cb3de08, 0xb4e49cd8, 0x56c19064,
      0xcb84617b, 0x32b670d5, 0x6c5c7448, 0xb85742d0];
 
-/// The table INV_MCOL0, used for performing InvMicCols during the key schedule.
+/// The table INV_MCOL0, used for performing InvMixCols during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL0: [u32; 256] =
@@ -434,7 +433,7 @@ static INV_MCOL0: [u32; 256] =
      0xe11ce5ed, 0xf307f2f0, 0xfd0efffb, 0xa779b492, 0xa970b999, 0xbb6bae84, 0xb562a38f,
      0x9f5d80be, 0x91548db5, 0x834f9aa8, 0x8d4697a3];
 
-/// The table INV_MCOL1, used for performing InvMicCols during the key schedule.
+/// The table INV_MCOL1, used for performing InvMixCols during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL1: [u32; 256] =
@@ -476,7 +475,7 @@ static INV_MCOL1: [u32; 256] =
      0xede11ce5, 0xf0f307f2, 0xfbfd0eff, 0x92a779b4, 0x99a970b9, 0x84bb6bae, 0x8fb562a3,
      0xbe9f5d80, 0xb591548d, 0xa8834f9a, 0xa38d4697];
 
-/// The table INV_MCOL2, used for performing InvMicCols during the key schedule.
+/// The table INV_MCOL2, used for performing InvMixCols during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL2: [u32; 256] =
@@ -518,7 +517,7 @@ static INV_MCOL2: [u32; 256] =
      0xe5ede11c, 0xf2f0f307, 0xfffbfd0e, 0xb492a779, 0xb999a970, 0xae84bb6b, 0xa38fb562,
      0x80be9f5d, 0x8db59154, 0x9aa8834f, 0x97a38d46];
 
-/// The table INV_MCOL3, used for performing InvMicCols during the key schedule.
+/// The table INV_MCOL3, used for performing InvMixCols during the key schedule.
 ///
 /// See section 5.3.4.2 of http://crsc.mist.gov/archive/aes/rijndael/Rijndael-ammended.pdf
 static INV_MCOL3: [u32; 256] =
@@ -597,12 +596,11 @@ pub struct AesCipher {
 }
 
 impl AesCipher {
-    /// Creates a new AesCipher which uses the given key for encryption and
-    /// decryption of blocks of data.
+    /// Creates a new AesCipher which uses the given key for encryption and decryption of blocks
+    /// of data.
     pub fn new(key: &[u8]) -> Result<AesCipher, AesKeyError> {
 
-        // Check that the key is a supported length, and initialize some
-        // useful variables.
+        // Check that the key is a supported length, and initialize some useful variables.
         let (key_words, num_rounds) = match key.len() {
             16 => (4, 10),
             24 => (6, 12),
@@ -615,13 +613,13 @@ impl AesCipher {
 
         // Copy in the words of the key directly for the first few round keys.
         for ix in 0..key_words {
-            round_keys.push(((key[4 * ix + 0] as u32) << 24) | ((key[4 * ix + 1] as u32) << 16) |
+            round_keys.push(((key[4 * ix + 0] as u32) << 24) |
+                            ((key[4 * ix + 1] as u32) << 16) |
                             ((key[4 * ix + 2] as u32) << 8) |
                             ((key[4 * ix + 3] as u32) << 0));
         }
 
-        // Generate the round keys for the subsequent rounds using the key
-        // schedule algorithm.
+        // Generate the round keys for the subsequent rounds using the key schedule algorithm.
         for ix in key_words..4 * (num_rounds + 1) {
             let mut tmp = round_keys[ix - 1];
             if (ix % key_words) == 0 {
@@ -642,8 +640,8 @@ impl AesCipher {
             round_keys.push(word ^ tmp);
         }
 
-        // Now generate the round keys for the inverse cipher by applying
-        // the InvMixCols transformation to the forward keys.
+        // Now generate the round keys for the inverse cipher by applying the InvMixCols
+        // transformation to the forward keys.
         let mut inv_round_keys = round_keys.clone();
         for ix in 4..4 * num_rounds {
             let key = inv_round_keys[ix];
@@ -664,13 +662,14 @@ impl Cipher for AesCipher {
     /// Encrypt a single block of 16 bytes using the AES algorithm.
     fn encrypt(&self, input: &[u8]) -> Vec<u8> {
 
-        // Copy the input into the state array. Also create a dummy state
-        // array to hold temporary results during the rounds.
+        // Copy the input into the state array. Also create a dummy state array to hold temporary
+        // results during the rounds.
         let mut dummy = vec![0, 0, 0, 0];
         let mut state = Vec::with_capacity(4);
 
         for ix in 0..4 {
-            state.push(((input[4 * ix + 0] as u32) << 24) | ((input[4 * ix + 1] as u32) << 16) |
+            state.push(((input[4 * ix + 0] as u32) << 24) |
+                       ((input[4 * ix + 1] as u32) << 16) |
                        ((input[4 * ix + 2] as u32) << 8) |
                        ((input[4 * ix + 3] as u32) << 0));
         }
@@ -680,8 +679,8 @@ impl Cipher for AesCipher {
             state[ix] ^= self.round_keys[ix];
         }
 
-        // Perform all but the last round of encryption. Use the T-tables to
-        // run these rounds quickly.
+        // Perform all but the last round of encryption. Use the T-tables to run these rounds
+        // quickly.
         for round in 1..(self.round_keys.len() / 4 - 1) {
             for ix in 0..4 {
                 dummy[ix] = T0[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^
@@ -695,8 +694,8 @@ impl Cipher for AesCipher {
             }
         }
 
-        // Finally, perform the final round, which does not include a MixCols
-        // operation, and return the result in byte form.
+        // Finally, perform the final round, which does not include a MixCols operation, and
+        // return the result in byte form.
         let mut output = Vec::with_capacity(16);
         for ix in 0..4 {
             let key = self.round_keys[self.round_keys.len() - 4 + ix];
@@ -712,13 +711,14 @@ impl Cipher for AesCipher {
     /// Decrypt a single block of 16 bytes using the AES algorithm.
     fn decrypt(&self, input: &[u8]) -> Vec<u8> {
 
-        // Copy the input into the state array. Also create a dummy state
-        // array to hold temporary results during the rounds.
+        // Copy the input into the state array. Also create a dummy state array to hold
+        // temporary results during the rounds.
         let mut dummy = vec![0, 0, 0, 0];
         let mut state = Vec::with_capacity(4);
 
         for ix in 0..4 {
-            state.push(((input[4 * ix + 0] as u32) << 24) | ((input[4 * ix + 1] as u32) << 16) |
+            state.push(((input[4 * ix + 0] as u32) << 24) |
+                       ((input[4 * ix + 1] as u32) << 16) |
                        ((input[4 * ix + 2] as u32) << 8) |
                        ((input[4 * ix + 3] as u32) << 0));
         }
@@ -728,8 +728,8 @@ impl Cipher for AesCipher {
             state[ix] ^= self.inv_round_keys[self.inv_round_keys.len() - 4 + ix];
         }
 
-        // Perform all but the last round of encryption. Use the T-tables to
-        // run these rounds quickly.
+        // Perform all but the last round of decryption. Use the T-tables to run these rounds
+        // quickly.
         for round in 1..(self.round_keys.len() / 4 - 1) {
             for ix in 0..4 {
                 dummy[ix] = INV_T0[(state[(ix + 0) % 4] >> 24) as u8 as usize] ^
@@ -743,8 +743,8 @@ impl Cipher for AesCipher {
             }
         }
 
-        // Finally, perform the final round, which does not include a MixCols
-        // operation, and return the result in byte form.
+        // Finally, perform the final round, which does not include an InvMixCols operation, and
+        // return the result in byte form.
         let mut output = Vec::with_capacity(16);
         for ix in 0..4 {
             let key = self.inv_round_keys[ix];

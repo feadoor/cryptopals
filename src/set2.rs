@@ -85,9 +85,8 @@ pub fn challenge11() {
     // Create an ECB/CBC black-box.
     let mut ecb_cbc_box = EcbOrCbc::new();
 
-    // Run 100 trials - for each one, try encrypt some data with repeated
-    // blocks using the encryption oracle, and try to accurately predict if it
-    // is using ECB or CBC.
+    // Run 100 trials - for each one, try encrypt some data with repeated blocks using the
+    // encryption box, and try to accurately predict if it is using ECB or CBC.
     println!("Performing trials...");
     let input = Data::from_bytes(vec![b'a'; 256]);
     let mut score = 0.0;
@@ -113,10 +112,9 @@ pub fn challenge12() {
     println!("Byte-at-a-time ECB decryption (Simple):\n");
 
     // Create an ECB-with-suffix black-box.
-    let base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg\
-                  aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq\
-                  dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg\
-                  YnkK";
+    let base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpU\
+                  aGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5v\
+                  LCBJIGp1c3QgZHJvdmUgYnkK";
     let suffix = Data::from_base64(base64).unwrap();
     let ecb_suffix_box = EcbWithSuffix::new(suffix);
 

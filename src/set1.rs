@@ -61,8 +61,7 @@ pub fn challenge03() {
     println!("Single-byte XOR cipher:\n");
 
     // Get the hex input.
-    let hex = "1b37373331363f78151b7f2b783431333d\
-               78397828372d363c78373e783a393b3736";
+    let hex = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     println!("Hex input: {}", hex);
 
     // Find the best XOR key.

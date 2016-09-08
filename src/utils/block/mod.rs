@@ -11,13 +11,11 @@ use std::error;
 use utils::data::Data;
 use utils::xor::xor;
 
-/// Algorithms that can be used for the encryption and decryption of a single
-/// block.
+/// Algorithms that can be used for the encryption and decryption of a single block.
 pub enum Algorithms {
     /// The AES algorithm.
     Aes,
-    /// A dummy cipher which takes blocks of the given size and does no
-    /// encryption or decryption.
+    /// A dummy cipher which takes blocks of the given size and does no encryption or decryption.
     Null(usize),
 }
 
@@ -63,8 +61,8 @@ impl error::Error for CBCError {
     }
 }
 
-/// Trait for encrypting and decrypting a single block of bytes, to be used as
-/// the core of a block cipher.
+/// Trait for encrypting and decrypting a single block of bytes, to be used as the core of a
+/// block cipher.
 trait Cipher {
     /// Encrypt a single block of bytes.
     fn encrypt(&self, input: &[u8]) -> Vec<u8>;
@@ -85,9 +83,8 @@ pub struct BlockCipher {
 }
 
 impl BlockCipher {
-    /// Returns a new BlockCipher which uses the given algorithm, key,
-    /// operation mode and padding scheme for encryption and decryption of
-    /// blocks.
+    /// Returns a new BlockCipher which uses the given algorithm, key, operation mode and
+    /// padding scheme for encryption and decryption of blocks.
     ///
     /// # Example
     ///
@@ -185,8 +182,7 @@ impl BlockCipher {
         // Somewhere to store the resulting encrypted message.
         let mut output = Vec::with_capacity(data.bytes().len());
 
-        // Iterate over the data, one block at a time, encrypting them, and
-        // storing the results.
+        // Iterate over the data, one block at a time, encrypting them, and storing the results.
         let mut ix = 0;
         while ix + self.cipher.block_size() <= data.bytes().len() {
             let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
@@ -203,8 +199,7 @@ impl BlockCipher {
         // Somewhere to store the resulting decrypted message.
         let mut output = Vec::with_capacity(data.bytes().len());
 
-        // Iterate over the data, one block at a time, decrypting them, and
-        // storing the results.
+        // Iterate over the data, one block at a time, decrypting them, and storing the results.
         let mut ix = 0;
         while ix < data.bytes().len() {
             let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
@@ -226,8 +221,8 @@ impl BlockCipher {
         // Somewhere to store the resulting encrypted message.
         let mut output = Vec::with_capacity(data.bytes().len());
 
-        // Iterate over the data, one block at a time, XORing with the previous
-        // ciphertext block, then encrypting.
+        // Iterate over the data, one block at a time, XORing with the previous ciphertext block,
+        // then encrypting.
         let mut ix = 0;
         let mut last_out_block = iv.clone();
         while ix + self.cipher.block_size() <= data.bytes().len() {
@@ -253,8 +248,8 @@ impl BlockCipher {
         // Somewhere to store the resulting decrypted message.
         let mut output = Vec::with_capacity(data.bytes().len());
 
-        // Iterate over the data, one block at a time, decrypting the block and
-        // then XORing with the previous ciphertext block.
+        // Iterate over the data, one block at a time, decrypting the block and then XORing with
+        // the previous ciphertext block.
         let mut ix = 0;
         let mut last_in_block = iv.clone();
         while ix + self.cipher.block_size() <= data.bytes().len() {

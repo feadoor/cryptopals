@@ -8,8 +8,7 @@ use std::error;
 
 use utils::data::Data;
 
-/// Errors that can arise when calculating the Hamming distance between two
-/// pieces of data.
+/// Errors that can arise when calculating the Hamming distance between two pieces of data.
 pub enum HammingDistanceError {
     /// The input data have unequal lengths.
     UnequalLengths,
@@ -37,8 +36,8 @@ impl error::Error for HammingDistanceError {
     }
 }
 
-/// Returns a numeric score representing how likely it is that a particular
-/// piece of data is English text - a higher score is better.
+/// Returns a numeric score representing how likely it is that a particular piece of data is
+/// English text - a higher score is better.
 ///
 /// # Example
 ///
@@ -50,8 +49,8 @@ pub fn score_as_english(data: &Data) -> f64 {
     // Variable to keep track of the score as we go.
     let mut score = 0 as f64;
 
-    // Iterate over the data bytes, and for each one, update the score
-    // according to how common that byte is in English text.
+    // Iterate over the data bytes, and for each one, update the score according to how common that
+    // byte is in English text.
     for byte in data.bytes() {
         match *byte {
             b'E' | b'e' => score += 12.70,
@@ -94,8 +93,7 @@ pub fn score_as_english(data: &Data) -> f64 {
 ///
 /// # Errors
 ///
-/// Returns `Err(UnequalLengths)` if the two input data were of different
-/// lengths.
+/// Returns `Err(UnequalLengths)` if the two input data were of different lengths.
 ///
 /// # Example
 ///
@@ -126,9 +124,8 @@ pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistan
     Ok(dist)
 }
 
-/// Returns a numeric score representing how likely it is that the given data
-/// has been encoded using a repeating XOR key of the given size - lower is
-/// better.
+/// Returns a numeric score representing how likely it is that the given data has been encoded
+/// using a repeating XOR key of the given size - lower is better.
 ///
 /// # Example
 ///
@@ -141,8 +138,8 @@ pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistan
 /// ```
 pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
 
-    // Iterate over pairs of blocks of data of the given length, and find the
-    // average Hamming distance between blocks.
+    // Iterate over pairs of blocks of data of the given length, and find the average Hamming
+    // distance between blocks.
     let mut average_distance = 0.0;
 
     let num_pairs = data.bytes().len() / keysize - 1;
@@ -157,8 +154,8 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
     average_distance / keysize as f64
 }
 
-/// Returns `true` or `false` as to whether it is likely that the given
-/// encrypted data has been encrypted using ECB mode.
+/// Returns `true` or `false` as to whether it is likely that the given encrypted data has been
+/// encrypted using ECB mode.
 ///
 /// # Example
 ///
