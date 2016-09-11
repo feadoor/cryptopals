@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 use attacks;
-use blackboxes::{EcbOrCbc, EcbWithSuffix};
+use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbUserProfile};
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::metrics;
@@ -150,6 +150,51 @@ pub fn challenge12() {
     if ecb_suffix_box.check_answer(&suffix_guess) {
         println!("Success!");
         println!("Suffix (text): {}", suffix_guess.to_text());
+    } else {
+        println!("Failure...");
+    }
+
+    println!("\nChallenge complete!\n");
+}
+
+/// Run the solution to Set 2 Challenge 13 (ECB cut-and-paste)
+pub fn challenge13() {
+
+    // Print an explanatory header.
+    println!("Running Set 2, Challenge 13,");
+    println!("ECB cut-and-paste:\n");
+
+    // Create an ECB-user-profile black-box.
+    let ecb_profile_box = EcbUserProfile::new();
+
+    // Paste together non-admin tokens in order to create an admin token. This works by first
+    // asking for the following three tokens:
+    //
+    //                           0123456789ABCDEF 0123456789ABCDEF 0123456789ABCDEF
+    // email@foo.com         --> email=email@foo. com&uid=10&role= user
+    // noone@fakeadmin       --> email=noone@fake admin&uid=10&rol e=user
+    // useless@madeup.com    --> email=useless@ma deup.com&uid=10& role=user
+    //
+    // If we then take the first two blocks of the first token, the second block of the second
+    // token and the final block of the third token, and paste them together, we will end up with
+    // the following token:
+    //
+    // email=email@foo.com&uid=10&role=admin&uid=10&rolrole=user
+    println!("Crafting admin token...");
+    let token1 = ecb_profile_box.make_token("email@foo.com");
+    let token2 = ecb_profile_box.make_token("noone@fakeadmin");
+    let token3 = ecb_profile_box.make_token("useless@madeup");
+
+    let mut new_token_bytes = Vec::with_capacity(4 * 16);
+    new_token_bytes.extend_from_slice(&token1.bytes()[..32]);
+    new_token_bytes.extend_from_slice(&token2.bytes()[16..32]);
+    new_token_bytes.extend_from_slice(&token3.bytes()[32..]);
+
+    let admin_token = Data::from_bytes(new_token_bytes);
+
+    // Check that we've been successful.
+    if ecb_profile_box.is_admin(&admin_token) {
+        println!("Success!");
     } else {
         println!("Failure...");
     }

@@ -2,6 +2,8 @@
 //!
 //! These black boxes will often be the target of cryptographic attacks.
 
+use std::collections::HashMap;
+
 use rand;
 use rand::Rng;
 
@@ -183,5 +185,116 @@ impl EcbWithSuffix {
     /// ```
     pub fn check_answer(&self, suffix_guess: &Data) -> bool {
         suffix_guess.bytes() == self.suffix.bytes()
+    }
+}
+
+
+/// Creates ECB-encrypted user tokens.
+///
+/// A black box which takes an email address, sanitises the input, creates a token of the form
+/// `email=<user_email>&uid=10&role=user`, then encrypts that under ECB using a block size of 16
+/// bytes, and returns the result.
+///
+/// # Goal
+///
+/// To obtain (by any means) a token which decrypts to one containing "role=admin".
+pub struct EcbUserProfile {
+    /// The BlockCipher that this black box uses to encrypt data.
+    block: BlockCipher,
+}
+
+impl EcbUserProfile {
+    /// Creates a new EcbUserProfile.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let ecb_profile_box = EcbUserProfile::new();
+    /// ```
+    pub fn new() -> EcbUserProfile {
+        let key = Data::random(16);
+        let block = BlockCipher::new(Algorithms::Aes,
+                                     OperationModes::Ecb,
+                                     PaddingSchemes::Pkcs7,
+                                     &key)
+            .unwrap();
+        EcbUserProfile { block: block }
+    }
+
+    /// Create a token for the given email address.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let ecb_profile_box = EcbUserProfile::new();
+    /// let token = ecb_profile_box.make_token("foo@bar.com");
+    /// ```
+    pub fn make_token(&self, email: &str) -> Data {
+        // First remove any metacharacters from the given email address.
+        let sanitised = email.replace("&", "").replace("=", "");
+
+        // Now form the token and return it in encrypted form.
+        let mut plain = "email=".to_string();
+        plain.push_str(&sanitised);
+        plain.push_str("&uid=10&role=user");
+        let token = Data::from_text(&plain);
+        self.block.encrypt(&token)
+    }
+
+    /// Decrypt and parse a token.
+    fn read_token(&self, token: &Data) -> Result<HashMap<String, String>, &str> {
+        // First decrypt the encrypted token.
+        let plain = self.block.decrypt(token).to_text();
+
+        // Now split on occurrences of '&' and read the 'k=v' pairs.
+        let mut pairs = HashMap::new();
+        for pair in plain.split('&') {
+            let mut keyval = pair.split('=');
+            let key = match keyval.next() {
+                Some(x) => x,
+                None => return Err("Invalid key-value pair: no key"),
+            };
+            let val = match keyval.next() {
+                Some(x) => x,
+                None => return Err("Invalid key-value pair: no value"),
+            };
+            if let Some(_) = keyval.next() {
+                return Err("Invalid key-value pair: too many items");
+            }
+            pairs.insert(key.to_string(), val.to_string());
+        }
+
+        Ok(pairs)
+    }
+
+    /// Parses an encrypted token, and returns `true` or `false` according to whether the token
+    /// represents a profile containing `role=admin`.
+    ///
+    /// # Example
+    ///
+    ///
+    /// ```
+    /// let ecb_profile_box = EcbUserProfile::new();
+    /// let token = ecb_profile_box.make_token("foo@bar.com");
+    /// let is_admin = ecb_profile_box.is_admin(&token);
+    /// ```
+    pub fn is_admin(&self, token: &Data) -> bool {
+        // Decrypt and read the token.
+        let pairs = match self.read_token(token) {
+            Ok(x) => x,
+            Err(_) => return false,
+        };
+
+        if pairs.get(&"role".to_string()) == Some(&"admin".to_string()) {
+            return true;
+        }
+
+        false
+    }
+}
+
+impl Default for EcbUserProfile {
+    fn default() -> Self {
+        Self::new()
     }
 }

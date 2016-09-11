@@ -27,4 +27,5 @@ fn main() {
     set2::challenge10();
     set2::challenge11();
     set2::challenge12();
+    set2::challenge13();
 }
