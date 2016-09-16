@@ -25,12 +25,6 @@ pub struct EcbOrCbc {
 
 impl EcbOrCbc {
     /// Create a new EcbOrCbc.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let ecb_cbc_box = EcbOrCbc::new();
-    /// ```
     pub fn new() -> EcbOrCbc {
         EcbOrCbc { last_mode: OperationModes::Ecb } // This is a lie - never mind.
     }
@@ -39,14 +33,6 @@ impl EcbOrCbc {
     ///
     /// Choose ECB or CBC mode at random, and generate some random noise to go on either end of the
     /// plaintext before encryption.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let ecb_cbc_box = EcbOrCbc::new();
-    /// let data = Data::from_text("Please encrypt this");
-    /// let output = ecb_cbc_box.encrypt(&data);
-    /// ```
     pub fn encrypt(&mut self, input: &Data) -> Data {
 
         // Generate a random key.
@@ -91,15 +77,6 @@ impl EcbOrCbc {
 
     /// Check the given answer concerning whether or not the previous text was encrypted using ECB
     /// mode.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let ecb_cbc_box = EcbOrCbc::new();
-    /// let data = Data::from_text("Some text to encrypt");
-    /// let output = ecb_cbc_box.encrypt(&data);
-    /// let correct = ecb_cbc_box.check_answer(true);
-    /// ```
     pub fn check_answer(&self, is_ecb: bool) -> bool {
         match self.last_mode {
             OperationModes::Ecb => is_ecb,
@@ -131,13 +108,6 @@ pub struct EcbWithSuffix {
 
 impl EcbWithSuffix {
     /// Creates a new EcbWithSuffix which uses the given suffix.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let suffix = Data::from_text("Secret suffix");
-    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
-    /// ```
     pub fn new(suffix: Data) -> EcbWithSuffix {
         let key = Data::random(16);
         let block = BlockCipher::new(Algorithms::Aes,
@@ -154,15 +124,6 @@ impl EcbWithSuffix {
     /// Encrypts the input data.
     ///
     /// First appends the suffix to the given data, then encrypts under ECB mode.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let suffix = Data::from_text("Secret suffix");
-    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
-    /// let input = Data::from_text("Please encrypt this text");
-    /// let output = ecb_suffix_box.encrypt(&input);
-    /// ```
     pub fn encrypt(&self, input: &Data) -> Data {
         let new_input_size = input.bytes().len() + self.suffix.bytes().len();
         let mut new_input_bytes = Vec::with_capacity(new_input_size);
@@ -174,15 +135,6 @@ impl EcbWithSuffix {
     }
 
     /// Checks if the suffix has been correctly determined.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let suffix = Data::from_text("Secret suffix");
-    /// let ecb_suffix_box = EcbWithSuffix::new(suffix);
-    /// let guess = Data::from_text("Wrong suffix");
-    /// let correct = ecb_suffix_box.check_answer(&guess);
-    /// ```
     pub fn check_answer(&self, suffix_guess: &Data) -> bool {
         suffix_guess.bytes() == self.suffix.bytes()
     }
@@ -205,12 +157,6 @@ pub struct EcbUserProfile {
 
 impl EcbUserProfile {
     /// Creates a new EcbUserProfile.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let ecb_profile_box = EcbUserProfile::new();
-    /// ```
     pub fn new() -> EcbUserProfile {
         let key = Data::random(16);
         let block = BlockCipher::new(Algorithms::Aes,
@@ -222,13 +168,6 @@ impl EcbUserProfile {
     }
 
     /// Create a token for the given email address.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let ecb_profile_box = EcbUserProfile::new();
-    /// let token = ecb_profile_box.make_token("foo@bar.com");
-    /// ```
     pub fn make_token(&self, email: &str) -> Data {
         // First remove any metacharacters from the given email address.
         let sanitised = email.replace("&", "").replace("=", "");
@@ -269,15 +208,6 @@ impl EcbUserProfile {
 
     /// Parses an encrypted token, and returns `true` or `false` according to whether the token
     /// represents a profile containing `role=admin`.
-    ///
-    /// # Example
-    ///
-    ///
-    /// ```
-    /// let ecb_profile_box = EcbUserProfile::new();
-    /// let token = ecb_profile_box.make_token("foo@bar.com");
-    /// let is_admin = ecb_profile_box.is_admin(&token);
-    /// ```
     pub fn is_admin(&self, token: &Data) -> bool {
         // Decrypt and read the token.
         let pairs = match self.read_token(token) {

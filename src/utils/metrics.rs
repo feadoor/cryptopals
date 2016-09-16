@@ -38,13 +38,6 @@ impl error::Error for HammingDistanceError {
 
 /// Returns a numeric score representing how likely it is that a particular piece of data is
 /// English text - a higher score is better.
-///
-/// # Example
-///
-/// ```
-/// let data  = Data::from_text("This text should score quite highly");
-/// let score = score_as_english(&data);
-/// ```
 pub fn score_as_english(data: &Data) -> f64 {
     // Variable to keep track of the score as we go.
     let mut score = 0 as f64;
@@ -90,18 +83,6 @@ pub fn score_as_english(data: &Data) -> f64 {
 }
 
 /// Calculates the Hamming distance between two pieces of data of equal size.
-///
-/// # Errors
-///
-/// Returns `Err(UnequalLengths)` if the two input data were of different lengths.
-///
-/// # Example
-///
-/// ```
-/// let data1 = Data::from_text("Some text");
-/// let data2 = Data::from_text("More text");
-/// let dist = hamming_distance(&data1, &data2).unwrap();
-/// ```
 pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistanceError> {
 
     // Check that the two inputs have equal sizes.
@@ -126,16 +107,6 @@ pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistan
 
 /// Returns a numeric score representing how likely it is that the given data has been encoded
 /// using a repeating XOR key of the given size - lower is better.
-///
-/// # Example
-///
-/// ```
-/// let data = Data::from_text("This is a very secret message");
-/// let key  = Data::from_text("key");
-/// let enc  = xor(&data, &key);
-///
-/// let score = score_xor_keysize(&data, 3)
-/// ```
 pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
 
     // Iterate over pairs of blocks of data of the given length, and find the average Hamming
@@ -156,13 +127,6 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
 
 /// Returns `true` or `false` as to whether it is likely that the given encrypted data has been
 /// encrypted using ECB mode.
-///
-/// # Example
-///
-/// ```
-/// let data = Data::from_text("Bananas Canada");
-/// let ecb  = is_ecb_mode(&data, 2);
-/// ```
 pub fn is_ecb_mode(data: &Data, block_size: usize) -> bool {
 
     // Use a HashMap to store occurences of each block.

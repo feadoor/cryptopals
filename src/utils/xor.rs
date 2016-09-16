@@ -3,14 +3,6 @@
 use utils::data::Data;
 
 /// XORs the given data with a repeating key.
-///
-/// # Example
-///
-/// ```
-/// let data = Data::from_text("Some text");
-/// let key  = Data::from_text("secret");
-/// let result = xor(&data, &key);
-/// ```
 pub fn xor(data: &Data, key: &Data) -> Data {
 
     // Create a new vector to store the resulting bytes in.

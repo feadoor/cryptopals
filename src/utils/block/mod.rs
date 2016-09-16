@@ -85,16 +85,6 @@ pub struct BlockCipher {
 impl BlockCipher {
     /// Returns a new BlockCipher which uses the given algorithm, key, operation mode and
     /// padding scheme for encryption and decryption of blocks.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes,
-    ///                              OperationModes::Ecb,
-    ///                              PaddingSchemes::Pkcs7,
-    ///                              &key).unwrap();
-    /// ```
     pub fn new(algorithm: Algorithms,
                mode: OperationModes,
                padding: PaddingSchemes,
@@ -124,18 +114,6 @@ impl BlockCipher {
     }
 
     /// Encrypts the given input data using the given mode of operation.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes,
-    ///                              OperationModes::Ecb,
-    ///                              PaddingSchemes::Pkcs7,
-    ///                              &key).unwrap();
-    /// let input = Data::from_text("Some very important information.");
-    /// let output = block.encrypt(&input);
-    /// ```
     pub fn encrypt(&self, input: &Data) -> Data {
         let data = match self.padding {
             PaddingSchemes::Pkcs7 => self.pkcs7_pad(input),
@@ -147,19 +125,6 @@ impl BlockCipher {
     }
 
     /// Decrypts the given input data using the given mode of operation.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let key = Data::from_text("this is a secret");
-    /// let block = BlockCipher::new(Algorithms::Aes,
-    ///                              OperationModes::Ecb,
-    ///                              PaddingSchemes::Pkcs7,
-    ///                              &key).unwrap();
-    /// let hex = "366450b83d2f4fdafa7884021ba030f73266ec2819186c2cc05c36237e0217cb";
-    /// let input = Data::from_hex(hex).unwrap();
-    /// let output = block.decrypt(&input);
-    /// ```
     pub fn decrypt(&self, input: &Data) -> Data {
         let data = match self.mode {
             OperationModes::Ecb => self.ecb_decrypt(input),

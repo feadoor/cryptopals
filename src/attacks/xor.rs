@@ -7,16 +7,6 @@ use utils::metrics;
 use utils::xor::xor;
 
 /// Finds the most likely single-byte key that was used to encrypt the given data.
-///
-/// # Example
-///
-/// ```
-/// let data = Data::from_text("This is a top secret message");
-/// let key  = Data::from_text("k");
-/// let enc  = xor(&data, &key);
-///
-/// let (likely_key, score) = best_single_byte_key(&enc);
-/// ```
 pub fn best_single_byte_key(data: &Data) -> (Data, f64) {
 
     // Keep track of the best key so far
@@ -37,16 +27,6 @@ pub fn best_single_byte_key(data: &Data) -> (Data, f64) {
 }
 
 /// Finds the most likely repeating-XOR key that was used to encrypt the given data.
-///
-/// # Example
-///
-/// ```
-/// let data = Data::from_text("This is a top secret message");
-/// let key  = Data::from_text("key");
-/// let enc  = xor(&data, &key);
-///
-/// let likely_key = best_repeating_key(&enc);
-/// ```
 pub fn best_repeating_key(data: &Data) -> Data {
 
     // First find the most likely key size.

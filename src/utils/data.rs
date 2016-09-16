@@ -84,23 +84,11 @@ pub struct Data {
 
 impl Data {
     /// Creates a new empty Data object.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::new();
-    /// ```
     pub fn new() -> Data {
         Data { bytes: Vec::new() }
     }
 
     /// Create a new random Data object containing the given number of bytes.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::random(100);
-    /// ```
     pub fn random(size: usize) -> Data {
         let mut rng = rand::thread_rng();
         let mut bytes = Vec::with_capacity(size);
@@ -111,18 +99,6 @@ impl Data {
     }
 
     /// Creates a new Data object from a sequence of bytes given as a hexadecimal string.
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err(BadHexChar)` if the input contained a non-hexadecimal character.
-    ///
-    /// Returns `Err(BadHexLength)` if the input did not split exactly into a sequence of bytes.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_hex("536f6d6520686578").unwrap();
-    /// ```
     pub fn from_hex(input: &str) -> Result<Data, FromHexError> {
 
         // Create a new vector which is capable of holding the sequence of bytes which we parse.
@@ -156,18 +132,6 @@ impl Data {
     }
 
     /// Creates a new Data object from a base-64 encoded string.
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err(BadBase64Char)` if an invalid character was found.
-    ///
-    /// Returns `Err(BadBase64Length)` if the input had an invalid length.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_base64("SSdtIGtpbGxpbmcgeW91").unwrap();
-    /// ```
     pub fn from_base64(input: &str) -> Result<Data, FromBase64Error> {
 
         // Create a new vector which is capable of holding the sequence of bytes which is produced.
@@ -243,46 +207,21 @@ impl Data {
 
     /// Creates a new Data object from a sequence of byte values represented as a plain text
     /// string.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// ```
     pub fn from_text(input: &str) -> Data {
         Data { bytes: input.as_bytes().to_vec() }
     }
 
     /// Creates a new Data object from a sequence of raw byte values.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_bytes(vec![100, 97, 119]);
-    /// ```
     pub fn from_bytes(input: Vec<u8>) -> Data {
         Data { bytes: input }
     }
 
     /// Creates a new Data object representing a single byte.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_single_byte(100);
-    /// ```
     pub fn from_single_byte(input: u8) -> Data {
         Data { bytes: vec![input] }
     }
 
     /// Returns the message as a hexadecimal string.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// let hex = data.to_hex();
-    /// ```
     pub fn to_hex(&self) -> String {
 
         // Create a mapping from nibbles to hex characters.
@@ -303,13 +242,6 @@ impl Data {
     }
 
     /// Returns the message as a base-64 encoded string.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// let base64 = data.to_base64();
-    /// ```
     pub fn to_base64(&self) -> String {
 
         // Create a mapping from sextets to base-64 characters.
@@ -360,37 +292,16 @@ impl Data {
     }
 
     /// Returns the message as a plain text string.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// let text = data.to_text();
-    /// ```
     pub fn to_text(&self) -> String {
         String::from_utf8(self.bytes.clone()).unwrap()
     }
 
     /// Returns a slice containing the sequence of bytes stored in this Data
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// let bytes = data.bytes();
-    /// ```
     pub fn bytes(&self) -> &[u8] {
         &self.bytes
     }
 
     /// Returns a new Data formed of a slice of the sequence of bytes stored in this Data.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let data = Data::from_text("Some text");
-    /// let slice = data.slice(3, 7);
-    /// ```
     pub fn slice(&self, start: usize, end: usize) -> Data {
         Data { bytes: self.bytes[start..end].to_vec() }
     }
