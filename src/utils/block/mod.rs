@@ -139,11 +139,11 @@ impl BlockCipher {
     fn ecb_encrypt(&self, data: &Data) -> Data {
 
         // Somewhere to store the resulting encrypted message.
-        let mut output = Vec::with_capacity(data.bytes().len());
+        let mut output = Vec::with_capacity(data.len());
 
         // Iterate over the data, one block at a time, encrypting them, and storing the results.
         let mut ix = 0;
-        while ix + self.cipher.block_size() <= data.bytes().len() {
+        while ix + self.cipher.block_size() <= data.len() {
             let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
             output.extend_from_slice(&self.cipher.encrypt(in_block));
             ix += self.cipher.block_size();
@@ -156,11 +156,11 @@ impl BlockCipher {
     fn ecb_decrypt(&self, data: &Data) -> Data {
 
         // Somewhere to store the resulting decrypted message.
-        let mut output = Vec::with_capacity(data.bytes().len());
+        let mut output = Vec::with_capacity(data.len());
 
         // Iterate over the data, one block at a time, decrypting them, and storing the results.
         let mut ix = 0;
-        while ix < data.bytes().len() {
+        while ix < data.len() {
             let in_block = &data.bytes()[ix..ix + self.cipher.block_size()];
             output.extend_from_slice(&self.cipher.decrypt(in_block));
             ix += self.cipher.block_size();
@@ -173,18 +173,18 @@ impl BlockCipher {
     fn cbc_encrypt(&self, data: &Data, iv: &Data) -> Result<Data, CBCError> {
 
         // Check that the initialisation vector has the right length.
-        if iv.bytes().len() != self.cipher.block_size() {
+        if iv.len() != self.cipher.block_size() {
             return Err(BadIVLength);
         }
 
         // Somewhere to store the resulting encrypted message.
-        let mut output = Vec::with_capacity(data.bytes().len());
+        let mut output = Vec::with_capacity(data.len());
 
         // Iterate over the data, one block at a time, XORing with the previous ciphertext block,
         // then encrypting.
         let mut ix = 0;
         let mut last_out_block = iv.clone();
-        while ix + self.cipher.block_size() <= data.bytes().len() {
+        while ix + self.cipher.block_size() <= data.len() {
             let in_block = data.slice(ix, ix + self.cipher.block_size());
             let xor_block = xor(&in_block, &last_out_block);
             let out_block = self.cipher.encrypt(xor_block.bytes());
@@ -200,18 +200,18 @@ impl BlockCipher {
     fn cbc_decrypt(&self, data: &Data, iv: &Data) -> Result<Data, CBCError> {
 
         // Check that the initialisation vector has the right length.
-        if iv.bytes().len() != self.cipher.block_size() {
+        if iv.len() != self.cipher.block_size() {
             return Err(BadIVLength);
         }
 
         // Somewhere to store the resulting decrypted message.
-        let mut output = Vec::with_capacity(data.bytes().len());
+        let mut output = Vec::with_capacity(data.len());
 
         // Iterate over the data, one block at a time, decrypting the block and then XORing with
         // the previous ciphertext block.
         let mut ix = 0;
         let mut last_in_block = iv.clone();
-        while ix + self.cipher.block_size() <= data.bytes().len() {
+        while ix + self.cipher.block_size() <= data.len() {
             let in_block = data.slice(ix, ix + self.cipher.block_size());
             let xor_block = self.cipher.decrypt(in_block.bytes());
             let out_block = xor(&Data::from_bytes(xor_block), &last_in_block);
@@ -227,7 +227,7 @@ impl BlockCipher {
     fn pkcs7_pad(&self, data: &Data) -> Data {
 
         // Work out the value of the padding bytes.
-        let pad = self.cipher.block_size() - data.bytes().len() % self.cipher.block_size();
+        let pad = self.cipher.block_size() - data.len() % self.cipher.block_size();
 
         // Construct a new Data with the padding included.
         let mut new_bytes = data.bytes().to_vec();
@@ -241,8 +241,8 @@ impl BlockCipher {
     fn pkcs7_unpad(&self, data: &Data) -> Data {
 
         // Remove the last N bytes, where N is the value of the final byte.
-        let pad = data.bytes()[data.bytes().len() - 1] as usize;
-        let new_bytes = &data.bytes()[..data.bytes().len() - pad];
+        let pad = data.bytes()[data.len() - 1] as usize;
+        let new_bytes = &data.bytes()[..data.len() - pad];
         Data::from_bytes(new_bytes.to_vec())
     }
 }

@@ -305,4 +305,14 @@ impl Data {
     pub fn slice(&self, start: usize, end: usize) -> Data {
         Data { bytes: self.bytes[start..end].to_vec() }
     }
+
+    /// Returns the length (in bytes) of this Data.
+    pub fn len(&self) -> usize {
+        self.bytes.len()
+    }
+
+    /// Returns true if this Data is empty, and false otherwise.
+    pub fn is_empty(&self) -> bool {
+        self.bytes.len() == 0
+    }
 }

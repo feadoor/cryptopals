@@ -6,7 +6,7 @@ use utils::data::Data;
 pub fn xor(data: &Data, key: &Data) -> Data {
 
     // Create a new vector to store the resulting bytes in.
-    let mut bytes = Vec::with_capacity(data.bytes().len());
+    let mut bytes = Vec::with_capacity(data.len());
 
     // Repeatedly loop over the key and XOR the data bytes.
     let mut it = data.bytes().iter();

@@ -42,7 +42,7 @@ impl EcbOrCbc {
         let ecb: bool = rand::random();
 
         // Generate some random bytes at the start and end of the input.
-        let mut noisy_input = Vec::with_capacity(input.bytes().len() + 20);
+        let mut noisy_input = Vec::with_capacity(input.len() + 20);
         let before_count = rand::thread_rng().gen_range(5, 11);
         let after_count = rand::thread_rng().gen_range(5, 11);
         let before_data = Data::random(before_count);
@@ -125,7 +125,7 @@ impl EcbWithSuffix {
     ///
     /// First appends the suffix to the given data, then encrypts under ECB mode.
     pub fn encrypt(&self, input: &Data) -> Data {
-        let new_input_size = input.bytes().len() + self.suffix.bytes().len();
+        let new_input_size = input.len() + self.suffix.len();
         let mut new_input_bytes = Vec::with_capacity(new_input_size);
         new_input_bytes.extend_from_slice(input.bytes());
         new_input_bytes.extend_from_slice(self.suffix.bytes());
@@ -226,5 +226,60 @@ impl EcbUserProfile {
 impl Default for EcbUserProfile {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Encrypts data under ECB after adding a prefix and a suffix.
+///
+/// A black box which encrypts some input data by appending a fixed, unknown preifx and suffix,
+/// and then encrypts under ECB mode with a fixed, unknown key.
+///
+/// # Goal
+///
+/// To be able to determine the suffix.
+pub struct EcbWithAffixes {
+    /// The BlockCipher used to encrypt data.
+    block: BlockCipher,
+    /// The fixed prefix which is appended to inputs.
+    prefix: Data,
+    /// The fixed suffix which is appended to inputs.
+    suffix: Data,
+}
+
+impl EcbWithAffixes {
+    /// Creates a new EcbWithAffixes which uses the given suffix and a random prefix.
+    pub fn new(suffix: Data) -> EcbWithAffixes {
+        let key = Data::random(16);
+        let prefix_len = rand::thread_rng().gen_range(5, 25);
+        let prefix = Data::random(prefix_len);
+        let block = BlockCipher::new(Algorithms::Aes,
+                                     OperationModes::Ecb,
+                                     PaddingSchemes::Pkcs7,
+                                     &key)
+            .unwrap();
+        EcbWithAffixes {
+            block: block,
+            prefix: prefix,
+            suffix: suffix,
+        }
+    }
+
+    /// Encrypts the input data.
+    ///
+    /// First appends the prefix and suffix to the given data, then encrypts under ECB mode.
+    pub fn encrypt(&self, input: &Data) -> Data {
+        let new_input_size = input.len() + self.prefix.len() + self.suffix.len();
+        let mut new_input_bytes = Vec::with_capacity(new_input_size);
+        new_input_bytes.extend_from_slice(self.prefix.bytes());
+        new_input_bytes.extend_from_slice(input.bytes());
+        new_input_bytes.extend_from_slice(self.suffix.bytes());
+        let new_input = Data::from_bytes(new_input_bytes);
+
+        self.block.encrypt(&new_input)
+    }
+
+    /// Checks if the suffix has been correctly determined.
+    pub fn check_answer(&self, suffix_guess: &Data) -> bool {
+        suffix_guess.bytes() == self.suffix.bytes()
     }
 }

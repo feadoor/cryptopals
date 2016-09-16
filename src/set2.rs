@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 use attacks;
-use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbUserProfile};
+use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes};
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::metrics;
@@ -120,12 +120,12 @@ pub fn challenge12() {
 
     // Determine the block size.
     let block_size;
-    let base_len = ecb_suffix_box.encrypt(&Data::new()).bytes().len();
+    let base_len = ecb_suffix_box.encrypt(&Data::new()).len();
     let mut cnt = 1;
     loop {
         let bytes = vec![0; cnt];
         let input = Data::from_bytes(bytes);
-        let new_len = ecb_suffix_box.encrypt(&input).bytes().len();
+        let new_len = ecb_suffix_box.encrypt(&input).len();
         if new_len > base_len {
             block_size = new_len - base_len;
             break;
@@ -195,6 +195,59 @@ pub fn challenge13() {
     // Check that we've been successful.
     if ecb_profile_box.is_admin(&admin_token) {
         println!("Success!");
+    } else {
+        println!("Failure...");
+    }
+
+    println!("\nChallenge complete!\n");
+}
+
+/// Run the solution to Set 2 Challenge 14 (Byte-at-a-time ECB decryption (Harder))
+pub fn challenge14() {
+
+    // Print an explanatory header.
+    println!("Running Set 2, Challenge 14,");
+    println!("Byte-at-a-time ECB decryption (Harder):\n");
+
+    // Create an ECB-with-suffix black-box.
+    let base64 = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpU\
+                  aGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5v\
+                  LCBJIGp1c3QgZHJvdmUgYnkK";
+    let suffix = Data::from_base64(base64).unwrap();
+    let ecb_affixes_box = EcbWithAffixes::new(suffix);
+
+    // Determine the block size.
+    let block_size;
+    let base_len = ecb_affixes_box.encrypt(&Data::new()).len();
+    let mut cnt = 1;
+    loop {
+        let bytes = vec![0; cnt];
+        let input = Data::from_bytes(bytes);
+        let new_len = ecb_affixes_box.encrypt(&input).len();
+        if new_len > base_len {
+            block_size = new_len - base_len;
+            break;
+        }
+        cnt += 1;
+    }
+    println!("Block size: {}", block_size);
+
+    // Confirm that ECB is being used.
+    let test_bytes = vec![0; block_size * 10];
+    let output = ecb_affixes_box.encrypt(&Data::from_bytes(test_bytes));
+    if metrics::is_ecb_mode(&output, block_size) {
+        println!("ECB mode is being used.");
+    } else {
+        println!("ECB mode is not being used, exiting.");
+        return;
+    }
+
+    // Decode the suffix without reading it directly!
+    println!("Decrypting suffix...");
+    let suffix_guess = attacks::block::find_ecb_suffix_with_prefix(&ecb_affixes_box, block_size);
+    if ecb_affixes_box.check_answer(&suffix_guess) {
+        println!("Success!");
+        println!("Suffix (text): {}", suffix_guess.to_text());
     } else {
         println!("Failure...");
     }

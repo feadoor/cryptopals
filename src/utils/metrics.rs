@@ -79,14 +79,14 @@ pub fn score_as_english(data: &Data) -> f64 {
         }
     }
 
-    score / data.bytes().len() as f64
+    score / data.len() as f64
 }
 
 /// Calculates the Hamming distance between two pieces of data of equal size.
 pub fn hamming_distance(data1: &Data, data2: &Data) -> Result<u32, HammingDistanceError> {
 
     // Check that the two inputs have equal sizes.
-    if data1.bytes().len() != data2.bytes().len() {
+    if data1.len() != data2.len() {
         return Err(UnequalLengths);
     }
 
@@ -113,7 +113,7 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
     // distance between blocks.
     let mut average_distance = 0.0;
 
-    let num_pairs = data.bytes().len() / keysize - 1;
+    let num_pairs = data.len() / keysize - 1;
     for ix in 0..num_pairs {
         let block1 = data.slice(ix * keysize, (ix + 1) * keysize);
         let block2 = data.slice((ix + 1) * keysize, (ix + 2) * keysize);
@@ -134,7 +134,7 @@ pub fn is_ecb_mode(data: &Data, block_size: usize) -> bool {
 
     // Iterate over the data and check if each block has appeared before.
     let mut ix = 0;
-    while ix + block_size <= data.bytes().len() {
+    while ix + block_size <= data.len() {
         let block = &data.bytes()[ix..ix + block_size];
         if blocks.contains(block) {
             return true;
