@@ -194,7 +194,7 @@ pub fn challenge07() {
                                  PaddingSchemes::Pkcs7,
                                  &key)
         .unwrap();
-    let plain = block.decrypt(&data);
+    let plain = block.decrypt(&data).unwrap();
     println!("Decrypted output: {}", plain.to_text());
 
     println!("\nChallenge complete!\n");

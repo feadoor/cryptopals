@@ -3,8 +3,6 @@
 mod aes;
 mod null;
 
-use self::CBCError::*;
-
 use std::fmt;
 use std::error;
 
@@ -33,30 +31,70 @@ pub enum PaddingSchemes {
     Pkcs7,
 }
 
-/// Errors that can arise when encrypting or decrypting in CBC mode.
-enum CBCError {
+/// Errors that can arise as a result of encrypting a piece of data.
+pub enum EncryptError {
     /// The initlisation vector was of the wrong length.
-    BadIVLength,
+    IVLength,
 }
 
-impl fmt::Display for CBCError {
+/// Errors that can arise as a result of decrypting a piece of data.
+pub enum DecryptError {
+    /// The initialisation vector was of the wrong length.
+    IVLength,
+    /// The data was of an invalid size.
+    DataLength,
+    /// The decrypted data had invalid padding.
+    Padding,
+}
+
+impl fmt::Display for EncryptError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::EncryptError::*;
         match *self {
-            BadIVLength => write!(f, "Initlisation vector has the wrong size"),
+            IVLength => write!(f, "Initialisation vector has the wrong size"),
         }
     }
 }
 
-impl fmt::Debug for CBCError {
+impl fmt::Debug for EncryptError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&self, f)
     }
 }
 
-impl error::Error for CBCError {
+impl error::Error for EncryptError {
     fn description(&self) -> &str {
+        use self::EncryptError::*;
         match *self {
-            BadIVLength => "invalid iv length",
+            IVLength => "invalid iv length",
+        }
+    }
+}
+
+impl fmt::Display for DecryptError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::DecryptError::*;
+        match *self {
+            IVLength => write!(f, "Initialisation vector has the wrong size"),
+            DataLength => write!(f, "The given data has an invalid length"),
+            Padding => write!(f, "The decrypted data has invalid padding"),
+        }
+    }
+}
+
+impl fmt::Debug for DecryptError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&self, f)
+    }
+}
+
+impl error::Error for DecryptError {
+    fn description(&self) -> &str {
+        use self::DecryptError::*;
+        match *self {
+            IVLength => "invalid iv length",
+            DataLength => "invalid data length",
+            Padding => "invalid padding",
         }
     }
 }
@@ -114,29 +152,29 @@ impl BlockCipher {
     }
 
     /// Encrypts the given input data using the given mode of operation.
-    pub fn encrypt(&self, input: &Data) -> Data {
+    pub fn encrypt(&self, input: &Data) -> Result<Data, EncryptError> {
         let data = match self.padding {
             PaddingSchemes::Pkcs7 => self.pkcs7_pad(input),
         };
         match self.mode {
             OperationModes::Ecb => self.ecb_encrypt(&data),
-            OperationModes::Cbc(ref iv) => self.cbc_encrypt(&data, iv).unwrap(),
+            OperationModes::Cbc(ref iv) => self.cbc_encrypt(&data, iv),
         }
     }
 
     /// Decrypts the given input data using the given mode of operation.
-    pub fn decrypt(&self, input: &Data) -> Data {
-        let data = match self.mode {
+    pub fn decrypt(&self, input: &Data) -> Result<Data, DecryptError> {
+        let data = try!(match self.mode {
             OperationModes::Ecb => self.ecb_decrypt(input),
-            OperationModes::Cbc(ref iv) => self.cbc_decrypt(input, iv).unwrap(),
-        };
+            OperationModes::Cbc(ref iv) => self.cbc_decrypt(input, iv),
+        });
         match self.padding {
             PaddingSchemes::Pkcs7 => self.pkcs7_unpad(&data),
         }
     }
 
     /// Encrypts the given data using ECB mode.
-    fn ecb_encrypt(&self, data: &Data) -> Data {
+    fn ecb_encrypt(&self, data: &Data) -> Result<Data, EncryptError> {
 
         // Somewhere to store the resulting encrypted message.
         let mut output = Vec::with_capacity(data.len());
@@ -149,11 +187,16 @@ impl BlockCipher {
             ix += self.cipher.block_size();
         }
 
-        Data::from_bytes(output)
+        Ok(Data::from_bytes(output))
     }
 
     /// Decrypts the given data using ECB mode.
-    fn ecb_decrypt(&self, data: &Data) -> Data {
+    fn ecb_decrypt(&self, data: &Data) -> Result<Data, DecryptError> {
+
+        // Check that the data is a valid length before decrypting.
+        if data.len() % self.cipher.block_size() != 0 {
+            return Err(DecryptError::DataLength);
+        }
 
         // Somewhere to store the resulting decrypted message.
         let mut output = Vec::with_capacity(data.len());
@@ -166,15 +209,15 @@ impl BlockCipher {
             ix += self.cipher.block_size();
         }
 
-        Data::from_bytes(output)
+        Ok(Data::from_bytes(output))
     }
 
     /// Encrypts the given data using CBC mode.
-    fn cbc_encrypt(&self, data: &Data, iv: &Data) -> Result<Data, CBCError> {
+    fn cbc_encrypt(&self, data: &Data, iv: &Data) -> Result<Data, EncryptError> {
 
         // Check that the initialisation vector has the right length.
         if iv.len() != self.cipher.block_size() {
-            return Err(BadIVLength);
+            return Err(EncryptError::IVLength);
         }
 
         // Somewhere to store the resulting encrypted message.
@@ -197,11 +240,16 @@ impl BlockCipher {
     }
 
     /// Decrypts the given data using CBC mode.
-    fn cbc_decrypt(&self, data: &Data, iv: &Data) -> Result<Data, CBCError> {
+    fn cbc_decrypt(&self, data: &Data, iv: &Data) -> Result<Data, DecryptError> {
 
         // Check that the initialisation vector has the right length.
         if iv.len() != self.cipher.block_size() {
-            return Err(BadIVLength);
+            return Err(DecryptError::IVLength);
+        }
+
+        // Check that the data itself is of a valid length.
+        if data.len() % self.cipher.block_size() != 0 {
+            return Err(DecryptError::DataLength);
         }
 
         // Somewhere to store the resulting decrypted message.
@@ -238,11 +286,16 @@ impl BlockCipher {
     }
 
     /// Unpads the given data using PKCS#7
-    fn pkcs7_unpad(&self, data: &Data) -> Data {
+    fn pkcs7_unpad(&self, data: &Data) -> Result<Data, DecryptError> {
 
-        // Remove the last N bytes, where N is the value of the final byte.
+        // Remove the last N bytes, where N is the value of the final byte, after first checking
+        // that all of these bytes have value N.
         let pad = data.bytes()[data.len() - 1] as usize;
+        if data.len() < pad || !(&data.bytes().ends_with(&vec![pad as u8; pad])) {
+            return Err(DecryptError::Padding);
+        }
+
         let new_bytes = &data.bytes()[..data.len() - pad];
-        Data::from_bytes(new_bytes.to_vec())
+        Ok(Data::from_bytes(new_bytes.to_vec()))
     }
 }

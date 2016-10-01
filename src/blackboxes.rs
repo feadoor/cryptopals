@@ -72,7 +72,7 @@ impl EcbOrCbc {
         };
 
         // Return the encrypted Data.
-        block.encrypt(&noisy_data)
+        block.encrypt(&noisy_data).unwrap()
     }
 
     /// Check the given answer concerning whether or not the previous text was encrypted using ECB
@@ -131,7 +131,7 @@ impl EcbWithSuffix {
         new_input_bytes.extend_from_slice(self.suffix.bytes());
         let new_input = Data::from_bytes(new_input_bytes);
 
-        self.block.encrypt(&new_input)
+        self.block.encrypt(&new_input).unwrap()
     }
 
     /// Checks if the suffix has been correctly determined.
@@ -177,13 +177,13 @@ impl EcbUserProfile {
         plain.push_str(&sanitised);
         plain.push_str("&uid=10&role=user");
         let token = Data::from_text(&plain);
-        self.block.encrypt(&token)
+        self.block.encrypt(&token).unwrap()
     }
 
     /// Decrypt and parse a token.
     fn read_token(&self, token: &Data) -> Result<HashMap<String, String>, &str> {
         // First decrypt the encrypted token.
-        let plain = self.block.decrypt(token).to_text();
+        let plain = self.block.decrypt(token).unwrap().to_text();
 
         // Now split on occurrences of '&' and read the 'k=v' pairs.
         let mut pairs = HashMap::new();
@@ -275,7 +275,7 @@ impl EcbWithAffixes {
         new_input_bytes.extend_from_slice(self.suffix.bytes());
         let new_input = Data::from_bytes(new_input_bytes);
 
-        self.block.encrypt(&new_input)
+        self.block.encrypt(&new_input).unwrap()
     }
 
     /// Checks if the suffix has been correctly determined.

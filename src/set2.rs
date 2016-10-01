@@ -31,7 +31,7 @@ pub fn challenge09() {
                                  PaddingSchemes::Pkcs7,
                                  &Data::new())
         .unwrap();
-    let padded = block.encrypt(&data);
+    let padded = block.encrypt(&data).unwrap();
     println!("Padded output: {}", padded.to_hex());
 
     println!("\nChallenge complete!\n");
@@ -69,7 +69,7 @@ pub fn challenge10() {
                                  PaddingSchemes::Pkcs7,
                                  &key)
         .unwrap();
-    let plain = block.decrypt(&data);
+    let plain = block.decrypt(&data).unwrap();
     println!("Decrypted output: {}", plain.to_text());
 
     println!("\nChallenge complete!\n");
