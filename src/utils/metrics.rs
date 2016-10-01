@@ -125,9 +125,8 @@ pub fn score_xor_keysize(data: &Data, keysize: usize) -> f64 {
     average_distance / keysize as f64
 }
 
-/// Returns `true` or `false` as to whether it is likely that the given encrypted data has been
-/// encrypted using ECB mode.
-pub fn is_ecb_mode(data: &Data, block_size: usize) -> bool {
+/// Returns `true` or `false` as to whether the given data has any repeated blocks.
+pub fn has_repeated_blocks(data: &Data, block_size: usize) -> bool {
 
     // Use a HashMap to store occurences of each block.
     let mut blocks: HashSet<&[u8]> = HashSet::new();

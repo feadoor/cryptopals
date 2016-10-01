@@ -1,6 +1,6 @@
 //! Implementations of cryptographic attacks against block ciphers.
 
-use blackboxes::{EcbWithSuffix, EcbWithAffixes};
+use blackboxes::{EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
 use utils::data::Data;
 
 /// Decrypt an unknown suffix encrypted under ECB mode.
@@ -132,4 +132,39 @@ pub fn find_ecb_suffix_with_prefix(ecb_affixes_box: &EcbWithAffixes, block_size:
     }
 
     Data::from_bytes(suffix)
+}
+
+/// Create a token which the EcbUserProfile decodes into a user profile with admin privileges.
+///
+/// Given - a black box which, given an email address, creates a user profile encoded in the form
+/// `email=<user-email>&uid=10&role=user`, then encrypts that under ECB mode and provides the
+/// output as a token to the user.
+///
+/// This utilises an ECB cut-and-paste attack to create an admin token.
+pub fn craft_ecb_admin_token(ecb_profile_box: &EcbUserProfile) -> Data {
+
+    // Paste together non-admin tokens in order to create an admin token. This works by first
+    // asking for the following three tokens:
+    //
+    //                           0123456789ABCDEF 0123456789ABCDEF 0123456789ABCDEF
+    // email@foo.com         --> email=email@foo. com&uid=10&role= user
+    // noone@fakeadmin       --> email=noone@fake admin&uid=10&rol e=user
+    // useless@madeup.com    --> email=useless@ma deup.com&uid=10& role=user
+    //
+    // If we then take the first two blocks of the first token, the second block of the second
+    // token and the final block of the third token, and paste them together, we will end up with
+    // the following token:
+    //
+    // email=email@foo.com&uid=10&role=admin&uid=10&rolrole=user
+    println!("Crafting admin token...");
+    let token1 = ecb_profile_box.make_token("email@foo.com");
+    let token2 = ecb_profile_box.make_token("noone@fakeadmin");
+    let token3 = ecb_profile_box.make_token("useless@madeup");
+
+    let mut new_token_bytes = Vec::with_capacity(4 * 16);
+    new_token_bytes.extend_from_slice(&token1.bytes()[..32]);
+    new_token_bytes.extend_from_slice(&token2.bytes()[16..32]);
+    new_token_bytes.extend_from_slice(&token3.bytes()[32..]);
+
+    Data::from_bytes(new_token_bytes)
 }

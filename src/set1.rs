@@ -215,7 +215,7 @@ pub fn challenge08() {
 
         // Check if this line was encrypted using ECB.
         let data = Data::from_hex(&line).unwrap();
-        if metrics::is_ecb_mode(&data, 16) {
+        if metrics::has_repeated_blocks(&data, 16) {
             println!("Encrypted with ECB: {}", data.to_hex());
         }
     }
