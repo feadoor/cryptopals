@@ -1,7 +1,23 @@
 //! Implementations of cryptographic attacks against block ciphers.
 
-use blackboxes::{EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
+use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
 use utils::data::Data;
+use utils::metrics;
+
+/// Determine whether a block cipher is using ECB or CBC mode.
+///
+/// Given a black box which encrypts (padded) user data under ECB mode or CBC mode at random,
+/// detect which mode it is using.
+pub fn is_ecb_mode(ecb_cbc_box: &mut EcbOrCbc) -> bool {
+
+    // Find a lower bound on the block size of the cipher by encrypting some empty data.
+    let block_size = ecb_cbc_box.encrypt(&Data::new()).len();
+
+    // Provide some input data which will definitely result in repeated blocks under ECB mode.
+    let input = Data::from_bytes(vec![0; 10 * block_size]);
+    let encrypted = ecb_cbc_box.encrypt(&input);
+    metrics::has_repeated_blocks(&encrypted, block_size)
+}
 
 /// Decrypt an unknown suffix encrypted under ECB mode.
 ///

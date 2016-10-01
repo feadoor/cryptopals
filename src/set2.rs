@@ -85,14 +85,12 @@ pub fn challenge11() {
     // Create an ECB/CBC black-box.
     let mut ecb_cbc_box = EcbOrCbc::new();
 
-    // Run 100 trials - for each one, try encrypt some data with repeated blocks using the
+    // Run 100 trials - for each one, try encrypting some data with repeated blocks using the
     // encryption box, and try to accurately predict if it is using ECB or CBC.
     println!("Performing trials...");
-    let input = Data::from_bytes(vec![b'a'; 256]);
     let mut score = 0.0;
     for _ in 0..1000 {
-        let encrypted = ecb_cbc_box.encrypt(&input);
-        let guess = metrics::has_repeated_blocks(&encrypted, 16);
+        let guess = attacks::block::is_ecb_mode(&mut ecb_cbc_box);
         if ecb_cbc_box.check_answer(guess) {
             score += 1.0;
         }
