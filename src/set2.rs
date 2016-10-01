@@ -254,3 +254,47 @@ pub fn challenge14() {
 
     println!("\nChallenge complete!\n");
 }
+
+/// Run the solution to Set 2 Challenge 15 (PKCS#7 padding validation)
+pub fn challenge15() {
+
+    // Print an explanatory header.
+    println!("Running Set 2, Challenge 15,");
+    println!("PKCS#7 padding validation:\n");
+
+    // Write a simple function that will validate PKCS#7 padding.
+    fn valid_padding(data: &Data) -> bool {
+        let block = BlockCipher::new(Algorithms::Null(data.len()),
+                                     OperationModes::Ecb,
+                                     PaddingSchemes::Pkcs7,
+                                     &Data::new())
+            .unwrap();
+
+        match block.decrypt(&data) {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    }
+
+    // Write a simple function which will add some given padding to some text.
+    fn add_padding(text: &str, padding: &[u8]) -> Data {
+        let mut data_bytes = text.as_bytes().to_vec();
+        data_bytes.extend_from_slice(padding);
+        Data::from_bytes(data_bytes)
+    }
+
+    // Check the three test cases.
+    let text = "ICE ICE BABY";
+
+    println!("Checking valid paddings.");
+    assert!(valid_padding(&add_padding(text, &[4, 4, 4, 4])));
+    assert!(valid_padding(&add_padding(text, &[1])));
+    println!("Passed!");
+
+    println!("Checking invalid paddings.");
+    assert!(!valid_padding(&add_padding(text, &[5, 5, 5, 5])));
+    assert!(!valid_padding(&add_padding(text, &[1, 2, 3, 4])));
+    println!("Passed!");
+
+    println!("\nChallenge complete!\n");
+}
