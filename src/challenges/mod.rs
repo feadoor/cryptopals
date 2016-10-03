@@ -6,6 +6,7 @@
 //! is run as part of the executable, and are also checked against the known answers as unit tests
 //! for the challenges.
 
+pub mod helpers;
 pub mod set1;
 pub mod set2;
 

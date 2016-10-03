@@ -6,6 +6,7 @@ use std::path::Path;
 
 use attacks;
 use challenges::{ChallengeResults, ChallengeResultsBuilder};
+use challenges::helpers;
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use victims::block::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes};
@@ -29,12 +30,7 @@ pub fn challenge09() -> ChallengeResults {
     let hex_in = data.to_hex();
 
     // Add the padding.
-    let block = BlockCipher::new(Algorithms::Null(20),
-                                 OperationModes::Ecb,
-                                 PaddingSchemes::Pkcs7,
-                                 &Data::new())
-        .unwrap();
-    let hex_out = block.encrypt(&data).unwrap().to_hex();
+    let hex_out = helpers::pkcs7_pad(&data, 20).to_hex();
 
     // Return the results
     ChallengeResultsBuilder::new()
@@ -214,38 +210,17 @@ pub fn challenge14() -> ChallengeResults {
 /// `detect_invalid` - Whether we correctly detect invalid padding.
 pub fn challenge15() -> ChallengeResults {
 
-    // Write a simple function that will validate PKCS#7 padding.
-    fn valid_padding(data: &Data) -> bool {
-        let block = BlockCipher::new(Algorithms::Null(data.len()),
-                                     OperationModes::Ecb,
-                                     PaddingSchemes::Pkcs7,
-                                     &Data::new())
-            .unwrap();
-
-        match block.decrypt(data) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    }
-
-    // Write a simple function which will add some given padding to some text.
-    fn add_padding(text: &str, padding: &[u8]) -> Data {
-        let mut data_bytes = text.as_bytes().to_vec();
-        data_bytes.extend_from_slice(padding);
-        Data::from_bytes(data_bytes)
-    }
-
     let text = "ICE ICE BABY";
 
     // Check valid paddings.
-    let valid1 = add_padding(text, &[4, 4, 4, 4]);
-    let valid2 = add_padding(text, &[1]);
-    let detect_valid = valid_padding(&valid1) && valid_padding(&valid2);
+    let valid1 = helpers::add_padding(text, &[4, 4, 4, 4]);
+    let valid2 = helpers::add_padding(text, &[1]);
+    let detect_valid = helpers::valid_pkcs7(&valid1) && helpers::valid_pkcs7(&valid2);
 
     // Check invalid paddings.
-    let invalid1 = add_padding(text, &[5, 5, 5, 5]);
-    let invalid2 = add_padding(text, &[1, 2, 3, 4]);
-    let detect_invalid = !valid_padding(&invalid1) && !valid_padding(&invalid2);
+    let invalid1 = helpers::add_padding(text, &[5, 5, 5, 5]);
+    let invalid2 = helpers::add_padding(text, &[1, 2, 3, 4]);
+    let detect_invalid = !helpers::valid_pkcs7(&invalid1) && !helpers::valid_pkcs7(&invalid2);
 
     // Return the results
     ChallengeResultsBuilder::new()

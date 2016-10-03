@@ -83,12 +83,12 @@ pub struct Data {
 }
 
 impl Data {
-    /// Creates a new empty Data object.
+    /// Creates a new empty `Data` object.
     pub fn new() -> Data {
         Data { bytes: Vec::new() }
     }
 
-    /// Create a new random Data object containing the given number of bytes.
+    /// Create a new random `Data` object containing the given number of bytes.
     pub fn random(size: usize) -> Data {
         let mut rng = rand::thread_rng();
         let mut bytes = Vec::with_capacity(size);
@@ -98,7 +98,7 @@ impl Data {
         Data { bytes: bytes }
     }
 
-    /// Creates a new Data object from a sequence of bytes given as a hexadecimal string.
+    /// Creates a new `Data` object from a sequence of bytes given as a hexadecimal string.
     pub fn from_hex(input: &str) -> Result<Data, FromHexError> {
 
         // Create a new vector which is capable of holding the sequence of bytes which we parse.
@@ -131,7 +131,7 @@ impl Data {
         }
     }
 
-    /// Creates a new Data object from a base-64 encoded string.
+    /// Creates a new `Data` object from a base-64 encoded string.
     pub fn from_base64(input: &str) -> Result<Data, FromBase64Error> {
 
         // Create a new vector which is capable of holding the sequence of bytes which is produced.
@@ -205,18 +205,18 @@ impl Data {
         Ok(Data { bytes: bytes })
     }
 
-    /// Creates a new Data object from a sequence of byte values represented as a plain text
+    /// Creates a new `Data` object from a sequence of byte values represented as a plain text
     /// string.
     pub fn from_text(input: &str) -> Data {
         Data { bytes: input.as_bytes().to_vec() }
     }
 
-    /// Creates a new Data object from a sequence of raw byte values.
+    /// Creates a new `Data` object from a sequence of raw byte values.
     pub fn from_bytes(input: Vec<u8>) -> Data {
         Data { bytes: input }
     }
 
-    /// Creates a new Data object representing a single byte.
+    /// Creates a new `Data` object representing a single byte.
     pub fn from_single_byte(input: u8) -> Data {
         Data { bytes: vec![input] }
     }
@@ -301,17 +301,17 @@ impl Data {
         &self.bytes
     }
 
-    /// Returns a new Data formed of a slice of the sequence of bytes stored in this Data.
+    /// Returns a new `Data` formed of a slice of the sequence of bytes stored in this Data.
     pub fn slice(&self, start: usize, end: usize) -> Data {
         Data { bytes: self.bytes[start..end].to_vec() }
     }
 
-    /// Returns the length (in bytes) of this Data.
+    /// Returns the length (in bytes) of this `Data`.
     pub fn len(&self) -> usize {
         self.bytes.len()
     }
 
-    /// Returns true if this Data is empty, and false otherwise.
+    /// Returns true if this `Data` is empty, and false otherwise.
     pub fn is_empty(&self) -> bool {
         self.bytes.len() == 0
     }
