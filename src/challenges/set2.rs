@@ -231,3 +231,70 @@ pub fn challenge15() -> ChallengeResults {
         .output("detect_invalid", &format!("{}", detect_invalid))
         .finalize()
 }
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn challenge09() {
+        let results = super::challenge09();
+        results.check("text_in", "YELLOW SUBMARINE");
+        results.check("hex_in", "59454c4c4f57205355424d4152494e45");
+        results.check("hex_out", "59454c4c4f57205355424d4152494e4504040404");
+    }
+
+    #[test]
+    fn challenge10() {
+        let results = super::challenge10();
+        results.check_prefix("base64_in",
+                             "CRIwqt4+szDbqkNY+I0qbNXPg1XLaCM5etQ5Bt9DRFV/xIN2k8Go7jtArLIyP605b071\
+                              DL8C+FPYSHOXPkMMMFPAKm+Nsu0nCBMQVt9mlluHbVE/yl6VaBCjNuOGvHZ9WYvt51uR\
+                              /lklZZ0ObqD5UaC1rupZwCEK4pIWf6JQ4pTyPjyiPtKXg54FNQvbVIHeotUG2kHEvH");
+        results.check("text_key", "YELLOW SUBMARINE");
+        results.check_prefix("text_out",
+                             "I'm back and I'm ringin' the bell \n\
+                              A rockin' on the mike while the fly girls yell \n\
+                              In ecstasy in the back of me");
+    }
+
+    #[test]
+    fn challenge11() {
+        let results = super::challenge11();
+        results.check("success_rate", "100%");
+    }
+
+    #[test]
+    fn challenge12() {
+        let results = super::challenge12();
+        results.check("success", "true");
+        results.check("text_out",
+                      "Rollin' in my 5.0\n\
+                       With my rag-top down so my hair can blow\n\
+                       The girlies on standby waving just to say hi\n\
+                       Did you stop? No, I just drove by\n");
+    }
+
+    #[test]
+    fn challenge13() {
+        let results = super::challenge13();
+        results.check("success", "true");
+    }
+
+    #[test]
+    fn challenge14() {
+        let results = super::challenge14();
+        results.check("success", "true");
+        results.check("text_out",
+                      "Rollin' in my 5.0\n\
+                       With my rag-top down so my hair can blow\n\
+                       The girlies on standby waving just to say hi\n\
+                       Did you stop? No, I just drove by\n");
+    }
+
+    #[test]
+    fn challenge15() {
+        let results = super::challenge15();
+        results.check("detect_valid", "true");
+        results.check("detect_invalid", "true");
+    }
+}

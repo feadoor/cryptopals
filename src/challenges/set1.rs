@@ -297,3 +297,93 @@ pub fn challenge08() -> ChallengeResults {
         .output("hex_in", &hex_in)
         .finalize()
 }
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn challenge01() {
+        let results = super::challenge01();
+        results.check("hex_in",
+                      "49276d206b696c6c696e6720796f757220627261696e206c\
+                       696b65206120706f69736f6e6f7573206d757368726f6f6d");
+        results.check("base64_out",
+                      "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+    }
+
+    #[test]
+    fn challenge02() {
+        let results = super::challenge02();
+        results.check("hex_in", "1c0111001f010100061a024b53535009181c");
+        results.check("hex_key", "686974207468652062756c6c277320657965");
+        results.check("hex_out", "746865206b696420646f6e277420706c6179");
+    }
+
+    #[test]
+    fn challenge03() {
+        let results = super::challenge03();
+        results.check("hex_in",
+                      "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
+        results.check("hex_key", "58");
+        results.check("text_out", "Cooking MC's like a pound of bacon");
+    }
+
+    #[test]
+    fn challenge04() {
+        let results = super::challenge04();
+        results.check("hex_in", "7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f");
+        results.check("hex_key", "35");
+        results.check("text_out", "Now that the party is jumping\n");
+    }
+
+    #[test]
+    fn challenge05() {
+        let results = super::challenge05();
+        results.check("text_in",
+                      "Burning 'em, if you ain't quick and nimble\n\
+                       I go crazy when I hear a cymbal");
+        results.check("text_key", "ICE");
+        results.check("hex_out",
+                      "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\
+                       a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
+    }
+
+    #[test]
+    fn challenge06() {
+        let results = super::challenge06();
+        results.check_prefix("base64_in",
+                             "HUIfTQsPAh9PE048GmllH0kcDk4TAQsHThsBFkU2AB4BSWQgVB0dQzNTTmVSBgBHVBwN\
+                              RU0HBAxTEjwMHghJGgkRTxRMIRpHKwAFHUdZEQQJAGQmB1MANxYGDBoXQR0BUlQwXwAg\
+                              EwoFR08SSAhFTmU+Fgk4RQYFCBpGB08fWXh+amI2DB0PQQ1IBlUaGwAdQnQEHgFJGg");
+        results.check("text_key", "Terminator X: Bring the noise");
+        results.check_prefix("text_out",
+                             "I'm back and I'm ringin' the bell \n\
+                              A rockin' on the mike while the fly girls yell \n\
+                              In ecstasy in the back of me");
+    }
+
+    #[test]
+    fn challenge07() {
+        let results = super::challenge07();
+        results.check_prefix("base64_in",
+                             "CRIwqt4+szDbqkNY+I0qbDe3LQz0wiw0SuxBQtAM5TDdMbjCMD/venUDW9BLPEXODbk6\
+                              a48oMbAY6DDZsuLbc0uR9cp9hQ0QQGATyyCESq2NSsvhx5zKlLtzdsnfK5ED5srKjK7F\
+                              z4Q38/ttd+stL/9WnDzlJvAo7WBsjI5YJc2gmAYayNfmCW2lhZE/ZLG0CBD2aPw0W4");
+        results.check("text_key", "YELLOW SUBMARINE");
+        results.check_prefix("text_out",
+                             "I'm back and I'm ringin' the bell \n\
+                              A rockin' on the mike while the fly girls yell \n\
+                              In ecstasy in the back of me");
+    }
+
+    #[test]
+    fn challenge08() {
+        let results = super::challenge08();
+        results.check("hex_in",
+                      "d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd283e2dd052f6b6\
+                       41dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d46597949d\
+                       9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b030\
+                       8649af70dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2\
+                       c123c58386b06fba186a");
+    }
+}

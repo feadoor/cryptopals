@@ -33,6 +33,19 @@ impl ChallengeResults {
         for &(ref key, ref value) in &self.outputs {
             if key == exp_key {
                 assert!(value == exp_val);
+                return;
+            }
+        }
+
+        assert!(false, "The key is not present");
+    }
+
+    /// Assert that a particular key is present and starts with the given prefix.
+    pub fn check_prefix(&self, exp_key: &str, exp_val: &str) {
+        for &(ref key, ref value) in &self.outputs {
+            if key == exp_key {
+                assert!(value.starts_with(exp_val));
+                return;
             }
         }
 
