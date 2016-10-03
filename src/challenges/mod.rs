@@ -9,7 +9,7 @@
 pub mod set1;
 pub mod set2;
 
-use ansi_term::Colour::{Cyan, Green, Yellow};
+use ansi_term::Colour::{Cyan, Green};
 
 use std::fmt;
 use std::string::String;
@@ -45,11 +45,11 @@ impl fmt::Display for ChallengeResults {
                                 self.set,
                                 self.challenge,
                                 self.description);
-        try!(write!(f, "\n{}\n", Yellow.bold().paint(long_desc)));
+        try!(write!(f, "\n{}\n", Green.bold().paint(long_desc)));
         for &(ref key, ref value) in &self.outputs {
             try!(write!(f, "\n{}: {}\n", Cyan.bold().paint(key.to_string()), value));
         }
-        write!(f, "\n{}", Green.bold().paint("Challenge complete!"))
+        Ok(())
     }
 }
 

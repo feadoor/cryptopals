@@ -261,7 +261,7 @@ pub fn challenge07() -> ChallengeResults {
         .challenge(7)
         .description("AES in ECB mode")
         .output("base64_in", &base64_in)
-        .output("text_key", &text_key)
+        .output("text_key", text_key)
         .output("text_out", &text_out)
         .finalize()
 }
