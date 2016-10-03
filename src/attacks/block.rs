@@ -10,7 +10,7 @@ use victims::block::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
 /// detect which mode it is using.
 pub fn is_ecb_mode(ecb_cbc_box: &mut EcbOrCbc) -> bool {
 
-    // Find a lower bound on the block size of the cipher by encrypting some empty data.
+    // Find an upper bound on the block size of the cipher by encrypting some empty data.
     let block_size = ecb_cbc_box.encrypt(&Data::new()).len();
 
     // Provide some input data which will definitely result in repeated blocks under ECB mode.
@@ -23,7 +23,28 @@ pub fn is_ecb_mode(ecb_cbc_box: &mut EcbOrCbc) -> bool {
 ///
 /// Given a black box which adds an unknown suffix to input data before encrypting under ECB mode
 /// with the given block size, determine the suffix.
-pub fn find_ecb_suffix(ecb_suffix_box: &EcbWithSuffix, block_size: usize) -> Data {
+pub fn find_ecb_suffix(ecb_suffix_box: &EcbWithSuffix) -> Data {
+
+    // Determine the block size by repeatedly encrypting larger chunks of data until the output
+    // jumps in length.
+    let block_size;
+    let base_len = ecb_suffix_box.encrypt(&Data::new()).len();
+    let mut cnt = 1;
+    loop {
+        let bytes = vec![0; cnt];
+        let input = Data::from_bytes(bytes);
+        let new_len = ecb_suffix_box.encrypt(&input).len();
+        if new_len > base_len {
+            block_size = new_len - base_len;
+            break;
+        }
+        cnt += 1;
+    }
+
+    // Confirm that ECB is being used.
+    let test_bytes = vec![0; block_size * 10];
+    let output = ecb_suffix_box.encrypt(&Data::from_bytes(test_bytes));
+    assert!(metrics::has_repeated_blocks(&output, block_size));
 
     // Keep track of the suffix bytes that we have decrypted so far.
     let mut suffix = Vec::new();
@@ -101,7 +122,28 @@ fn find_ecb_prefix_len(ecb_affixes_box: &EcbWithAffixes, block_size: usize) -> u
 ///
 /// Given a black box which adds an unknown prefix and suffix to input data before encrypting under
 /// ECB mode with the given block size, determine the suffix.
-pub fn find_ecb_suffix_with_prefix(ecb_affixes_box: &EcbWithAffixes, block_size: usize) -> Data {
+pub fn find_ecb_suffix_with_prefix(ecb_affixes_box: &EcbWithAffixes) -> Data {
+
+    // Determine the block size by repeatedly encrypting larger chunks of data until the output
+    // jumps in length.
+    let block_size;
+    let base_len = ecb_affixes_box.encrypt(&Data::new()).len();
+    let mut cnt = 1;
+    loop {
+        let bytes = vec![0; cnt];
+        let input = Data::from_bytes(bytes);
+        let new_len = ecb_affixes_box.encrypt(&input).len();
+        if new_len > base_len {
+            block_size = new_len - base_len;
+            break;
+        }
+        cnt += 1;
+    }
+
+    // Confirm that ECB is being used.
+    let test_bytes = vec![0; block_size * 10];
+    let output = ecb_affixes_box.encrypt(&Data::from_bytes(test_bytes));
+    assert!(metrics::has_repeated_blocks(&output, block_size));
 
     // First, find the length of the prefix, which is currently unknown.
     let prefix_len = find_ecb_prefix_len(ecb_affixes_box, block_size);
@@ -172,7 +214,6 @@ pub fn craft_ecb_admin_token(ecb_profile_box: &EcbUserProfile) -> Data {
     // the following token:
     //
     // email=email@foo.com&uid=10&role=admin&uid=10&rolrole=user
-    println!("Crafting admin token...");
     let token1 = ecb_profile_box.make_token("email@foo.com");
     let token2 = ecb_profile_box.make_token("noone@fakeadmin");
     let token3 = ecb_profile_box.make_token("useless@madeup");

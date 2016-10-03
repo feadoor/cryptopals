@@ -17,7 +17,7 @@ use utils::xor;
 ///
 /// `hex_in` - The input as a hexadecimal string.
 ///
-/// `b64_out` - The output as a base-64 string.
+/// `base64_out` - The output as a base-64 string.
 pub fn challenge01() -> ChallengeResults {
 
     // Get the hex input.
@@ -26,7 +26,7 @@ pub fn challenge01() -> ChallengeResults {
 
     // Convert to base-64.
     let data = Data::from_hex(hex_in).unwrap();
-    let b64_out = data.to_base64();
+    let base64_out = data.to_base64();
 
     // Return the results
     ChallengeResultsBuilder::new()
@@ -34,7 +34,7 @@ pub fn challenge01() -> ChallengeResults {
         .challenge(1)
         .description("Convert hex to base64")
         .output("hex_in", hex_in)
-        .output("b64_out", &b64_out)
+        .output("base64_out", &base64_out)
         .finalize()
 }
 
@@ -180,8 +180,8 @@ pub fn challenge05() -> ChallengeResults {
         .challenge(5)
         .description("Implement repeating-key XOR")
         .output("text_in", text_in)
-        .output("hex_key", text_key)
-        .output("text_out", &hex_out)
+        .output("text_key", text_key)
+        .output("hex_out", &hex_out)
         .finalize()
 }
 

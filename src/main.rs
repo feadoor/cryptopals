@@ -23,11 +23,11 @@ fn main() {
     println!("{}", challenges::set1::challenge08());
 
     // Run the challenges in Set 2.
-    //challenges::set2::challenge09();
-    //challenges::set2::challenge10();
-    //challenges::set2::challenge11();
-    //challenges::set2::challenge12();
-    //challenges::set2::challenge13();
-    //challenges::set2::challenge14();
-    //challenges::set2::challenge15();
+    println!("{}", challenges::set2::challenge09());
+    println!("{}", challenges::set2::challenge10());
+    println!("{}", challenges::set2::challenge11());
+    println!("{}", challenges::set2::challenge12());
+    println!("{}", challenges::set2::challenge13());
+    println!("{}", challenges::set2::challenge14());
+    println!("{}", challenges::set2::challenge15());
 }
