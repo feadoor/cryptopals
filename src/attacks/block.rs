@@ -1,8 +1,8 @@
 //! Implementations of cryptographic attacks against block ciphers.
 
-use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
 use utils::data::Data;
 use utils::metrics;
+use victims::block::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
 
 /// Determine whether a block cipher is using ECB or CBC mode.
 ///
@@ -150,7 +150,7 @@ pub fn find_ecb_suffix_with_prefix(ecb_affixes_box: &EcbWithAffixes, block_size:
     Data::from_bytes(suffix)
 }
 
-/// Create a token which the EcbUserProfile decodes into a user profile with admin privileges.
+/// Create a token which the `EcbUserProfile` decodes into a user profile with admin privileges.
 ///
 /// Given - a black box which, given an email address, creates a user profile encoded in the form
 /// `email=<user-email>&uid=10&role=user`, then encrypts that under ECB mode and provides the

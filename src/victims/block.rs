@@ -1,6 +1,4 @@
-//! Black-box implementations of cryptographic algorithms, as described in individual challenges.
-//!
-//! These black boxes will often be the target of cryptographic attacks.
+//! Implementations of insecure block-cryptographic algorithms.
 
 use std::collections::HashMap;
 

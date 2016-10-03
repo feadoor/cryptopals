@@ -5,10 +5,10 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 use attacks;
-use blackboxes::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes};
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
 use utils::metrics;
+use victims::block::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes};
 
 /// Run the solution to Set 2 Challenge 9 (Implement PKCS#7 padding)
 pub fn challenge09() {
@@ -246,7 +246,7 @@ pub fn challenge15() {
                                      &Data::new())
             .unwrap();
 
-        match block.decrypt(&data) {
+        match block.decrypt(data) {
             Ok(_) => true,
             Err(_) => false,
         }

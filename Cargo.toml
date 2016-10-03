@@ -5,3 +5,4 @@ authors = ["Sam Cappleman-Lynes <sam.capplemanlynes@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
+ansi_term = "0.9.0"
