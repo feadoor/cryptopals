@@ -9,7 +9,7 @@
 pub mod set1;
 pub mod set2;
 
-use ansi_term::Colour::Cyan;
+use ansi_term::Colour::{Cyan, Green, Yellow};
 
 use std::fmt;
 use std::string::String;
@@ -41,10 +41,15 @@ impl ChallengeResults {
 
 impl fmt::Display for ChallengeResults {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let long_desc = format!("Set {} Challenge {} - {}",
+                                self.set,
+                                self.challenge,
+                                self.description);
+        try!(write!(f, "\n{}\n", Yellow.bold().paint(long_desc)));
         for &(ref key, ref value) in &self.outputs {
             try!(write!(f, "\n{}: {}\n", Cyan.bold().paint(key.to_string()), value));
         }
-        Ok(())
+        write!(f, "\n{}", Green.bold().paint("Challenge complete!"))
     }
 }
 
@@ -64,11 +69,11 @@ pub struct ChallengeResultsBuilder {
 impl ChallengeResultsBuilder {
     /// Create a new `ChallengeResultsBuilder`.
     pub fn new() -> ChallengeResultsBuilder {
-        ChallengeResultsBuilder{
+        ChallengeResultsBuilder {
             set: 0,
             challenge: 0,
             description: "".to_string(),
-            outputs: Vec::new()
+            outputs: Vec::new(),
         }
     }
 
@@ -98,7 +103,7 @@ impl ChallengeResultsBuilder {
 
     /// Create a `ChallengeResults` from this builder.
     pub fn finalize(self) -> ChallengeResults {
-        ChallengeResults{
+        ChallengeResults {
             set: self.set,
             challenge: self.challenge,
             description: self.description,

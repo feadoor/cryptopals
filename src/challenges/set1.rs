@@ -25,7 +25,7 @@ pub fn challenge01() -> ChallengeResults {
                   696b65206120706f69736f6e6f7573206d757368726f6f6d";
 
     // Convert to base-64.
-    let data = Data::from_hex(&hex_in).unwrap();
+    let data = Data::from_hex(hex_in).unwrap();
     let b64_out = data.to_base64();
 
     // Return the results
@@ -56,8 +56,8 @@ pub fn challenge02() -> ChallengeResults {
     let hex_key = "686974207468652062756c6c277320657965";
 
     // Encrypt the data.
-    let data = Data::from_hex(&hex_in).unwrap();
-    let key = Data::from_hex(&hex_key).unwrap();
+    let data = Data::from_hex(hex_in).unwrap();
+    let key = Data::from_hex(hex_key).unwrap();
     let hex_out = xor::xor(&data, &key).to_hex();
 
     // Return the results
@@ -86,7 +86,7 @@ pub fn challenge03() -> ChallengeResults {
     let hex_in = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
 
     // Find the best XOR key.
-    let data = Data::from_hex(&hex_in).unwrap();
+    let data = Data::from_hex(hex_in).unwrap();
     let (key, _) = attacks::xor::best_single_byte_key(&data);
     let hex_key = key.to_hex();
 
