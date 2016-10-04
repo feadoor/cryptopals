@@ -30,4 +30,5 @@ fn main() {
     println!("{}", challenges::set2::challenge13());
     println!("{}", challenges::set2::challenge14());
     println!("{}", challenges::set2::challenge15());
+    println!("{}", challenges::set2::challenge16());
 }

@@ -9,7 +9,7 @@ use challenges::{ChallengeResults, ChallengeResultsBuilder};
 use challenges::helpers;
 use utils::block::{BlockCipher, Algorithms, OperationModes, PaddingSchemes};
 use utils::data::Data;
-use victims::block::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes};
+use victims::block::{EcbOrCbc, EcbWithSuffix, EcbUserProfile, EcbWithAffixes, CbcCookie};
 
 /// Run the solution to Set 2 Challenge 9 (Implement PKCS#7 padding)
 ///
@@ -232,6 +232,31 @@ pub fn challenge15() -> ChallengeResults {
         .finalize()
 }
 
+/// Run the solution to Set 2 Challenge 16 (CBC bitflipping attacks)
+///
+/// # Outputs
+///
+/// `success` - Whether the admin token was successfully created.
+pub fn challenge16() -> ChallengeResults {
+
+    // Create a CBB cookie black-box.
+    let cbc_cookie_box = CbcCookie::new();
+
+    // Craft an illegitimate admin token.
+    let admin_token = attacks::block::craft_cbc_admin_token(&cbc_cookie_box);
+
+    // Check that we've been successful.
+    let success = cbc_cookie_box.is_admin(&admin_token);
+
+    // Return the results
+    ChallengeResultsBuilder::new()
+        .set(2)
+        .challenge(16)
+        .description("CBC bitflipping attacks")
+        .output("success", &format!("{}", success))
+        .finalize()
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -296,5 +321,11 @@ mod tests {
         let results = super::challenge15();
         results.check("detect_valid", "true");
         results.check("detect_invalid", "true");
+    }
+
+    #[test]
+    fn challenge16() {
+        let results = super::challenge16();
+        results.check("success", "true");
     }
 }

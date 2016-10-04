@@ -213,11 +213,7 @@ impl EcbUserProfile {
             Err(_) => return false,
         };
 
-        if pairs.get(&"role".to_string()) == Some(&"admin".to_string()) {
-            return true;
-        }
-
-        false
+        pairs.get(&"role".to_string()) == Some(&"admin".to_string())
     }
 }
 
@@ -279,5 +275,66 @@ impl EcbWithAffixes {
     /// Checks if the suffix has been correctly determined.
     pub fn check_answer(&self, suffix_guess: &Data) -> bool {
         suffix_guess.bytes() == self.suffix.bytes()
+    }
+}
+
+/// Encrypts user-provided data in the form of a cookie using CBC.
+///
+/// A black box which takes an arbitrary string as input, escapes any metacharacters (';' and '=')
+/// and produces a cookie-like structure of the form
+/// `comment1=cooking%20MCs;userdata=<user-data>;comment2=%20like%20a%20pound%20of%20bacon`. This
+/// is then encrypted using CBC mode and provided to the user.
+///
+/// # Goal
+///
+/// To obtain, by any means, an encrypted cookie which decrypts to one containing ";admin=true;".
+pub struct CbcCookie {
+    /// The BlockCipher that this black box uses to encrypt data.
+    block: BlockCipher,
+}
+
+impl CbcCookie {
+    /// Creates a new `CbcCookie`.
+    pub fn new() -> CbcCookie {
+        let key = Data::random(16);
+        let iv = Data::random(16);
+        let block = BlockCipher::new(Algorithms::Aes,
+                                     OperationModes::Cbc(iv),
+                                     PaddingSchemes::Pkcs7,
+                                     &key)
+            .unwrap();
+        CbcCookie { block: block }
+    }
+
+    /// Create an encrypted cookie for the given user data.
+    pub fn make_token(&self, user_data: &str) -> Data {
+        // First quote out any metacharacters from the given user data.
+        let sanitised = user_data.replace(";", "%3B").replace("=", "%3D");
+
+        // Now form the cookie and return it in encrypted form.
+        let mut cookie = "comment1=cooking%20MCs;userdata=".to_string();
+        cookie.push_str(&sanitised);
+        cookie.push_str(";comment2=%20like%20a%20pound%20of%20bacon");
+        let token = Data::from_text(&cookie);
+        self.block.encrypt(&token).unwrap()
+    }
+
+    /// Parses an encrypted token, and returns `true` or `false` according to whether the token
+    /// represents a profile containing `admin=true`.
+    pub fn is_admin(&self, token: &Data) -> bool {
+
+        // The slice that we're looking for.
+        let target = &[b';', b'a', b'd', b'm', b'i', b'n', b'=', b't', b'r', b'u', b'e', b';'];
+        let len = target.len();
+
+        // Decrypt and read the token.
+        let cookie = self.block.decrypt(token).unwrap();
+        for ix in 0..cookie.len() - len {
+            if &cookie.bytes()[ix..ix + len] == target {
+                return true;
+            }
+        }
+
+        false
     }
 }

@@ -2,7 +2,7 @@
 
 use utils::data::Data;
 use utils::metrics;
-use victims::block::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile};
+use victims::block::{EcbOrCbc, EcbWithSuffix, EcbWithAffixes, EcbUserProfile, CbcCookie};
 
 /// Determine whether a block cipher is using ECB or CBC mode.
 ///
@@ -224,4 +224,31 @@ pub fn craft_ecb_admin_token(ecb_profile_box: &EcbUserProfile) -> Data {
     new_token_bytes.extend_from_slice(&token3.bytes()[32..]);
 
     Data::from_bytes(new_token_bytes)
+}
+
+/// Create a token which the `CbcCookie` decodes into a cookie with admin privileges.
+///
+/// Given - a black box which, given an arbitrary string, escapes the metacharacters ';' and '='
+/// from the input, then produces a cookie in the form
+/// `comment1=cooking%20MCs;userdata=<user-data>;comment2=%20like%20a%20pound%20of%20bacon` and
+/// encrypts the result under CBC mode.
+///
+/// This utilises a CBC bitflipping attack to create an admin token.
+pub fn craft_cbc_admin_token(cbc_cookie_box: &CbcCookie) -> Data {
+
+    // First, provide the user data "aaaaaaaaaaaaaaaa:admin<true:aa<a" and get the
+    // resulting token as raw bytes.
+    let token = cbc_cookie_box.make_token("aaaaaaaaaaaaaaaa:admin<true:aa<a");
+    let mut bytes = token.bytes().to_vec();
+
+    // Now, by flipping some of the bits in this token, we can obtain an admin token. Specifically,
+    // in CBC mode, flipping a bit in one ciphertext block scrambles the block it occurs in, and
+    // reproduces the exact same edit in the following block after decryption. This means that by
+    // choosing the bits we flip to occur in the block immediately before the one containing
+    // ':admin<true:' we can edit ':' into ';' and '<' into '='. This requires flipping the final
+    // bit of each of bytes 32, 38, 43 and 46.
+    for position in &[32, 38, 43, 46] {
+        bytes[*position] ^= 1;
+    }
+    Data::from_bytes(bytes)
 }
