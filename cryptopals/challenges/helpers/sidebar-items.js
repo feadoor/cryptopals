@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["add_padding","Add the given padding to some text and return the result as a `Data`"],["pkcs7_pad","Pad the given `Data` to the given block size using PKCS#7"],["pkcs7_unpad","Unpad the given `Data` using PKCS#7"],["valid_pkcs7",""]]});

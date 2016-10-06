@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="Source to the Rust file `src/attacks/block.rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang">
+
+    <title>block.rs.html -- source</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+</pre><pre class='rust '>
+<span class='doccomment'>//! Implementations of cryptographic attacks against block ciphers.</span>
+
+<span class='kw'>use</span> <span class='ident'>utils</span>::<span class='ident'>data</span>::<span class='ident'>Data</span>;
+<span class='kw'>use</span> <span class='ident'>utils</span>::<span class='ident'>metrics</span>;
+<span class='kw'>use</span> <span class='ident'>victims</span>::<span class='ident'>block</span>::{<span class='ident'>EcbOrCbc</span>, <span class='ident'>EcbWithSuffix</span>, <span class='ident'>EcbWithAffixes</span>, <span class='ident'>EcbUserProfile</span>, <span class='ident'>CbcCookie</span>};
+
+<span class='doccomment'>/// Determine whether a block cipher is using ECB or CBC mode.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Given a black box which encrypts (padded) user data under ECB mode or CBC mode at random,</span>
+<span class='doccomment'>/// detect which mode it is using.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_ecb_mode</span>(<span class='ident'>ecb_cbc_box</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>EcbOrCbc</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+
+    <span class='comment'>// Find an upper bound on the block size of the cipher by encrypting some empty data.</span>
+    <span class='kw'>let</span> <span class='ident'>block_size</span> <span class='op'>=</span> <span class='ident'>ecb_cbc_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>new</span>()).<span class='ident'>len</span>();
+
+    <span class='comment'>// Provide some input data which will definitely result in repeated blocks under ECB mode.</span>
+    <span class='kw'>let</span> <span class='ident'>input</span> <span class='op'>=</span> <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='number'>10</span> <span class='op'>*</span> <span class='ident'>block_size</span>]);
+    <span class='kw'>let</span> <span class='ident'>encrypted</span> <span class='op'>=</span> <span class='ident'>ecb_cbc_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>input</span>);
+    <span class='ident'>metrics</span>::<span class='ident'>has_repeated_blocks</span>(<span class='kw-2'>&amp;</span><span class='ident'>encrypted</span>, <span class='ident'>block_size</span>)
+}
+
+<span class='doccomment'>/// Decrypt an unknown suffix encrypted under ECB mode.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Given a black box which adds an unknown suffix to input data before encrypting under ECB mode</span>
+<span class='doccomment'>/// with the given block size, determine the suffix.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_ecb_suffix</span>(<span class='ident'>ecb_suffix_box</span>: <span class='kw-2'>&amp;</span><span class='ident'>EcbWithSuffix</span>) <span class='op'>-&gt;</span> <span class='ident'>Data</span> {
+
+    <span class='comment'>// Determine the block size by repeatedly encrypting larger chunks of data until the output</span>
+    <span class='comment'>// jumps in length.</span>
+    <span class='kw'>let</span> <span class='ident'>block_size</span>;
+    <span class='kw'>let</span> <span class='ident'>base_len</span> <span class='op'>=</span> <span class='ident'>ecb_suffix_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>new</span>()).<span class='ident'>len</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cnt</span> <span class='op'>=</span> <span class='number'>1</span>;
+    <span class='kw'>loop</span> {
+        <span class='kw'>let</span> <span class='ident'>bytes</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>cnt</span>];
+        <span class='kw'>let</span> <span class='ident'>input</span> <span class='op'>=</span> <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>bytes</span>);
+        <span class='kw'>let</span> <span class='ident'>new_len</span> <span class='op'>=</span> <span class='ident'>ecb_suffix_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>input</span>).<span class='ident'>len</span>();
+        <span class='kw'>if</span> <span class='ident'>new_len</span> <span class='op'>&gt;</span> <span class='ident'>base_len</span> {
+            <span class='ident'>block_size</span> <span class='op'>=</span> <span class='ident'>new_len</span> <span class='op'>-</span> <span class='ident'>base_len</span>;
+            <span class='kw'>break</span>;
+        }
+        <span class='ident'>cnt</span> <span class='op'>+=</span> <span class='number'>1</span>;
+    }
+
+    <span class='comment'>// Confirm that ECB is being used.</span>
+    <span class='kw'>let</span> <span class='ident'>test_bytes</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>block_size</span> <span class='op'>*</span> <span class='number'>10</span>];
+    <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_suffix_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>test_bytes</span>));
+    <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>metrics</span>::<span class='ident'>has_repeated_blocks</span>(<span class='kw-2'>&amp;</span><span class='ident'>output</span>, <span class='ident'>block_size</span>));
+
+    <span class='comment'>// Keep track of the suffix bytes that we have decrypted so far.</span>
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>suffix</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
+
+    <span class='comment'>// Decrypt the suffix one byte at a time.</span>
+    <span class='lifetime'>&#39;outer</span>: <span class='kw'>loop</span> {
+
+        <span class='comment'>// Pad the known suffix with null bytes until it finishes one byte before a block boundary.</span>
+        <span class='kw'>let</span> <span class='ident'>num_bytes</span> <span class='op'>=</span> <span class='ident'>block_size</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> (<span class='ident'>suffix</span>.<span class='ident'>len</span>() <span class='op'>%</span> <span class='ident'>block_size</span>);
+        <span class='kw'>let</span> <span class='ident'>padding</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>num_bytes</span>];
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>padded_known</span> <span class='op'>=</span> <span class='ident'>padding</span>.<span class='ident'>clone</span>();
+        <span class='ident'>padded_known</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>suffix</span>);
+
+        <span class='comment'>// Pass the padding into the box, and grab the encrypted block which corresponds to our</span>
+        <span class='comment'>// input block whose last byte we are trying to determine.</span>
+        <span class='kw'>let</span> <span class='ident'>block_pos</span> <span class='op'>=</span> <span class='ident'>padding</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='ident'>suffix</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>block_size</span>;
+        <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_suffix_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>padding</span>));
+        <span class='kw'>if</span> <span class='ident'>output</span>.<span class='ident'>len</span>() <span class='op'>&lt;=</span> <span class='ident'>block_pos</span> <span class='op'>+</span> <span class='ident'>block_size</span> {
+            <span class='comment'>// We&#39;ve retrieved the whole suffix, so break.</span>
+            <span class='kw'>break</span>;
+        }
+        <span class='kw'>let</span> <span class='ident'>block</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>output</span>.<span class='ident'>bytes</span>()[<span class='ident'>block_pos</span>..<span class='ident'>block_pos</span> <span class='op'>+</span> <span class='ident'>block_size</span>];
+
+        <span class='comment'>// Compare the encrypted block against all the possible outputs that the block could</span>
+        <span class='comment'>// encrypt to, depending on its final byte.</span>
+        <span class='kw'>let</span> <span class='ident'>partial_block</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>padded_known</span>[<span class='ident'>block_pos</span>..];
+
+        <span class='kw'>for</span> <span class='ident'>byte</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>256</span> {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>test_block</span> <span class='op'>=</span> <span class='ident'>partial_block</span>.<span class='ident'>to_vec</span>();
+            <span class='ident'>test_block</span>.<span class='ident'>push</span>(<span class='ident'>byte</span> <span class='kw'>as</span> <span class='ident'>u8</span>);
+            <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_suffix_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>test_block</span>));
+            <span class='kw'>if</span> <span class='kw-2'>&amp;</span><span class='ident'>output</span>.<span class='ident'>bytes</span>()[..<span class='ident'>block_size</span>] <span class='op'>==</span> <span class='ident'>block</span> {
+                <span class='ident'>suffix</span>.<span class='ident'>push</span>(<span class='ident'>byte</span> <span class='kw'>as</span> <span class='ident'>u8</span>);
+                <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
+            }
+        }
+    }
+
+    <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>suffix</span>)
+}
+
+<span class='doccomment'>/// Find the length of an unknown prefix which is appended to ECB-encrypted messages.</span>
+<span class='kw'>fn</span> <span class='ident'>find_ecb_prefix_len</span>(<span class='ident'>ecb_affixes_box</span>: <span class='kw-2'>&amp;</span><span class='ident'>EcbWithAffixes</span>, <span class='ident'>block_size</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+
+    <span class='comment'>// Find the block in which the prefix ends, by finding the first block which is different upon</span>
+    <span class='comment'>// inserting a null byte.</span>
+    <span class='kw'>let</span> <span class='ident'>empty</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>new</span>());
+    <span class='kw'>let</span> <span class='ident'>noisy</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>]));
+
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>prefix_block</span> <span class='op'>=</span> <span class='number'>0</span>;
+    <span class='kw'>for</span> (<span class='ident'>ix</span>, (<span class='ident'>byte1</span>, <span class='ident'>byte2</span>)) <span class='kw'>in</span> <span class='ident'>empty</span>.<span class='ident'>bytes</span>().<span class='ident'>iter</span>().<span class='ident'>zip</span>(<span class='ident'>noisy</span>.<span class='ident'>bytes</span>().<span class='ident'>iter</span>()).<span class='ident'>enumerate</span>() {
+        <span class='kw'>if</span> <span class='ident'>byte1</span> <span class='op'>!=</span> <span class='ident'>byte2</span> {
+            <span class='ident'>prefix_block</span> <span class='op'>=</span> <span class='ident'>ix</span> <span class='op'>/</span> <span class='ident'>block_size</span>;
+            <span class='kw'>break</span>;
+        }
+    }
+
+    <span class='comment'>// Now find the length of the prefix modulo the block size, by finding the smallest number of</span>
+    <span class='comment'>// null bytes we need to provide as input in order to produce repeated blocks.</span>
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>prefix_len</span> <span class='op'>=</span> <span class='ident'>block_size</span> <span class='op'>*</span> <span class='ident'>prefix_block</span>;
+    <span class='kw'>for</span> <span class='ident'>ix</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>block_size</span> {
+        <span class='kw'>let</span> <span class='ident'>repeats</span> <span class='op'>=</span> <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='number'>2</span> <span class='op'>*</span> <span class='ident'>block_size</span> <span class='op'>+</span> <span class='ident'>ix</span>]);
+        <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>repeats</span>);
+        <span class='kw'>if</span> <span class='ident'>output</span>.<span class='ident'>bytes</span>()[<span class='ident'>block_size</span> <span class='op'>*</span> (<span class='ident'>prefix_block</span> <span class='op'>+</span> <span class='number'>1</span>)..<span class='ident'>block_size</span> <span class='op'>*</span> (<span class='ident'>prefix_block</span> <span class='op'>+</span> <span class='number'>2</span>)] <span class='op'>==</span>
+           <span class='ident'>output</span>.<span class='ident'>bytes</span>()[<span class='ident'>block_size</span> <span class='op'>*</span> (<span class='ident'>prefix_block</span> <span class='op'>+</span> <span class='number'>2</span>)..<span class='ident'>block_size</span> <span class='op'>*</span> (<span class='ident'>prefix_block</span> <span class='op'>+</span> <span class='number'>3</span>)] {
+            <span class='ident'>prefix_len</span> <span class='op'>+=</span> <span class='ident'>block_size</span> <span class='op'>-</span> <span class='ident'>ix</span>;
+            <span class='kw'>break</span>;
+        }
+    }
+
+    <span class='ident'>prefix_len</span>
+}
+
+<span class='doccomment'>/// Decrypt an unknown suffix encrypted under ECB mode, when a prefix is also added.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Given a black box which adds an unknown prefix and suffix to input data before encrypting under</span>
+<span class='doccomment'>/// ECB mode with the given block size, determine the suffix.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_ecb_suffix_with_prefix</span>(<span class='ident'>ecb_affixes_box</span>: <span class='kw-2'>&amp;</span><span class='ident'>EcbWithAffixes</span>) <span class='op'>-&gt;</span> <span class='ident'>Data</span> {
+
+    <span class='comment'>// Determine the block size by repeatedly encrypting larger chunks of data until the output</span>
+    <span class='comment'>// jumps in length.</span>
+    <span class='kw'>let</span> <span class='ident'>block_size</span>;
+    <span class='kw'>let</span> <span class='ident'>base_len</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>new</span>()).<span class='ident'>len</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cnt</span> <span class='op'>=</span> <span class='number'>1</span>;
+    <span class='kw'>loop</span> {
+        <span class='kw'>let</span> <span class='ident'>bytes</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>cnt</span>];
+        <span class='kw'>let</span> <span class='ident'>input</span> <span class='op'>=</span> <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>bytes</span>);
+        <span class='kw'>let</span> <span class='ident'>new_len</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>input</span>).<span class='ident'>len</span>();
+        <span class='kw'>if</span> <span class='ident'>new_len</span> <span class='op'>&gt;</span> <span class='ident'>base_len</span> {
+            <span class='ident'>block_size</span> <span class='op'>=</span> <span class='ident'>new_len</span> <span class='op'>-</span> <span class='ident'>base_len</span>;
+            <span class='kw'>break</span>;
+        }
+        <span class='ident'>cnt</span> <span class='op'>+=</span> <span class='number'>1</span>;
+    }
+
+    <span class='comment'>// Confirm that ECB is being used.</span>
+    <span class='kw'>let</span> <span class='ident'>test_bytes</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>block_size</span> <span class='op'>*</span> <span class='number'>10</span>];
+    <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>test_bytes</span>));
+    <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>metrics</span>::<span class='ident'>has_repeated_blocks</span>(<span class='kw-2'>&amp;</span><span class='ident'>output</span>, <span class='ident'>block_size</span>));
+
+    <span class='comment'>// First, find the length of the prefix, which is currently unknown.</span>
+    <span class='kw'>let</span> <span class='ident'>prefix_len</span> <span class='op'>=</span> <span class='ident'>find_ecb_prefix_len</span>(<span class='ident'>ecb_affixes_box</span>, <span class='ident'>block_size</span>);
+
+    <span class='comment'>// Keep track of the suffix bytes that we have decrypted so far.</span>
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>suffix</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
+
+    <span class='comment'>// Decrypt the suffix one byte at a time.</span>
+    <span class='lifetime'>&#39;outer</span>: <span class='kw'>loop</span> {
+
+        <span class='comment'>// Pad the known suffix with null bytes until it finishes one byte before a block boundary.</span>
+        <span class='kw'>let</span> <span class='ident'>num_bytes</span> <span class='op'>=</span> <span class='number'>2</span> <span class='op'>*</span> <span class='ident'>block_size</span> <span class='op'>-</span> <span class='number'>1</span> <span class='op'>-</span> ((<span class='ident'>prefix_len</span> <span class='op'>+</span> <span class='ident'>suffix</span>.<span class='ident'>len</span>()) <span class='op'>%</span> <span class='ident'>block_size</span>);
+        <span class='kw'>let</span> <span class='ident'>padding</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>num_bytes</span>];
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>padded_known</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>prefix_len</span>];
+        <span class='ident'>padded_known</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>padding</span>);
+        <span class='ident'>padded_known</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>suffix</span>);
+
+        <span class='comment'>// Pass the padding into the box, and grab the encrypted block which corresponds to our</span>
+        <span class='comment'>// input block whose last byte we are trying to determine.</span>
+        <span class='kw'>let</span> <span class='ident'>block_pos</span> <span class='op'>=</span> <span class='ident'>prefix_len</span> <span class='op'>+</span> <span class='ident'>padding</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='ident'>suffix</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='number'>1</span> <span class='op'>-</span> <span class='ident'>block_size</span>;
+        <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>padding</span>));
+        <span class='kw'>if</span> <span class='ident'>output</span>.<span class='ident'>len</span>() <span class='op'>&lt;=</span> <span class='ident'>block_pos</span> <span class='op'>+</span> <span class='ident'>block_size</span> {
+            <span class='comment'>// We&#39;ve retrieved the whole suffix, so break.</span>
+            <span class='kw'>break</span>;
+        }
+        <span class='kw'>let</span> <span class='ident'>block</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>output</span>.<span class='ident'>bytes</span>()[<span class='ident'>block_pos</span>..<span class='ident'>block_pos</span> <span class='op'>+</span> <span class='ident'>block_size</span>];
+
+        <span class='comment'>// Compare the encrypted block against all the possible outputs that the block could</span>
+        <span class='comment'>// encrypt to, depending on its final byte.</span>
+        <span class='kw'>let</span> <span class='ident'>partial_block</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>padded_known</span>[<span class='ident'>block_pos</span>..];
+        <span class='kw'>let</span> <span class='ident'>extra_padding</span> <span class='op'>=</span> <span class='ident'>block_size</span> <span class='op'>-</span> (<span class='ident'>prefix_len</span> <span class='op'>%</span> <span class='ident'>block_size</span>);
+        <span class='kw'>let</span> <span class='ident'>output_start</span> <span class='op'>=</span> <span class='ident'>prefix_len</span> <span class='op'>+</span> <span class='ident'>extra_padding</span>;
+
+        <span class='kw'>for</span> <span class='ident'>byte</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>256</span> {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>test_block</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>block_size</span> <span class='op'>-</span> (<span class='ident'>prefix_len</span> <span class='op'>%</span> <span class='ident'>block_size</span>)];
+            <span class='ident'>test_block</span>.<span class='ident'>extend_from_slice</span>(<span class='ident'>partial_block</span>);
+            <span class='ident'>test_block</span>.<span class='ident'>push</span>(<span class='ident'>byte</span> <span class='kw'>as</span> <span class='ident'>u8</span>);
+            <span class='kw'>let</span> <span class='ident'>output</span> <span class='op'>=</span> <span class='ident'>ecb_affixes_box</span>.<span class='ident'>encrypt</span>(<span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>test_block</span>));
+            <span class='kw'>if</span> <span class='kw-2'>&amp;</span><span class='ident'>output</span>.<span class='ident'>bytes</span>()[<span class='ident'>output_start</span>..<span class='ident'>output_start</span> <span class='op'>+</span> <span class='ident'>block_size</span>] <span class='op'>==</span> <span class='ident'>block</span> {
+                <span class='ident'>suffix</span>.<span class='ident'>push</span>(<span class='ident'>byte</span> <span class='kw'>as</span> <span class='ident'>u8</span>);
+                <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
+            }
+        }
+    }
+
+    <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>suffix</span>)
+}
+
+<span class='doccomment'>/// Create a token which the `EcbUserProfile` decodes into a user profile with admin privileges.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Given - a black box which, given an email address, creates a user profile encoded in the form</span>
+<span class='doccomment'>/// `email=&lt;user-email&gt;&amp;uid=10&amp;role=user`, then encrypts that under ECB mode and provides the</span>
+<span class='doccomment'>/// output as a token to the user.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// This utilises an ECB cut-and-paste attack to create an admin token.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>craft_ecb_admin_token</span>(<span class='ident'>ecb_profile_box</span>: <span class='kw-2'>&amp;</span><span class='ident'>EcbUserProfile</span>) <span class='op'>-&gt;</span> <span class='ident'>Data</span> {
+
+    <span class='comment'>// Paste together non-admin tokens in order to create an admin token. This works by first</span>
+    <span class='comment'>// asking for the following three tokens:</span>
+    <span class='comment'>//</span>
+    <span class='comment'>//                           0123456789ABCDEF 0123456789ABCDEF 0123456789ABCDEF</span>
+    <span class='comment'>// email@foo.com         --&gt; email=email@foo. com&amp;uid=10&amp;role= user</span>
+    <span class='comment'>// noone@fakeadmin       --&gt; email=noone@fake admin&amp;uid=10&amp;rol e=user</span>
+    <span class='comment'>// useless@madeup.com    --&gt; email=useless@ma deup.com&amp;uid=10&amp; role=user</span>
+    <span class='comment'>//</span>
+    <span class='comment'>// If we then take the first two blocks of the first token, the second block of the second</span>
+    <span class='comment'>// token and the final block of the third token, and paste them together, we will end up with</span>
+    <span class='comment'>// the following token:</span>
+    <span class='comment'>//</span>
+    <span class='comment'>// email=email@foo.com&amp;uid=10&amp;role=admin&amp;uid=10&amp;rolrole=user</span>
+    <span class='kw'>let</span> <span class='ident'>token1</span> <span class='op'>=</span> <span class='ident'>ecb_profile_box</span>.<span class='ident'>make_token</span>(<span class='string'>&quot;email@foo.com&quot;</span>);
+    <span class='kw'>let</span> <span class='ident'>token2</span> <span class='op'>=</span> <span class='ident'>ecb_profile_box</span>.<span class='ident'>make_token</span>(<span class='string'>&quot;noone@fakeadmin&quot;</span>);
+    <span class='kw'>let</span> <span class='ident'>token3</span> <span class='op'>=</span> <span class='ident'>ecb_profile_box</span>.<span class='ident'>make_token</span>(<span class='string'>&quot;useless@madeup&quot;</span>);
+
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>new_token_bytes</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='number'>4</span> <span class='op'>*</span> <span class='number'>16</span>);
+    <span class='ident'>new_token_bytes</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>token1</span>.<span class='ident'>bytes</span>()[..<span class='number'>32</span>]);
+    <span class='ident'>new_token_bytes</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>token2</span>.<span class='ident'>bytes</span>()[<span class='number'>16</span>..<span class='number'>32</span>]);
+    <span class='ident'>new_token_bytes</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>token3</span>.<span class='ident'>bytes</span>()[<span class='number'>32</span>..]);
+
+    <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>new_token_bytes</span>)
+}
+
+<span class='doccomment'>/// Create a token which the `CbcCookie` decodes into a cookie with admin privileges.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Given - a black box which, given an arbitrary string, escapes the metacharacters &#39;;&#39; and &#39;=&#39;</span>
+<span class='doccomment'>/// from the input, then produces a cookie in the form</span>
+<span class='doccomment'>/// `comment1=cooking%20MCs;userdata=&lt;user-data&gt;;comment2=%20like%20a%20pound%20of%20bacon` and</span>
+<span class='doccomment'>/// encrypts the result under CBC mode.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// This utilises a CBC bitflipping attack to create an admin token.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>craft_cbc_admin_token</span>(<span class='ident'>cbc_cookie_box</span>: <span class='kw-2'>&amp;</span><span class='ident'>CbcCookie</span>) <span class='op'>-&gt;</span> <span class='ident'>Data</span> {
+
+    <span class='comment'>// First, provide the user data &quot;aaaaaaaaaaaaaaaa:admin&lt;true:aa&lt;a&quot; and get the</span>
+    <span class='comment'>// resulting token as raw bytes.</span>
+    <span class='kw'>let</span> <span class='ident'>token</span> <span class='op'>=</span> <span class='ident'>cbc_cookie_box</span>.<span class='ident'>make_token</span>(<span class='string'>&quot;aaaaaaaaaaaaaaaa:admin&lt;true:aa&lt;a&quot;</span>);
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bytes</span> <span class='op'>=</span> <span class='ident'>token</span>.<span class='ident'>bytes</span>().<span class='ident'>to_vec</span>();
+
+    <span class='comment'>// Now, by flipping some of the bits in this token, we can obtain an admin token. Specifically,</span>
+    <span class='comment'>// in CBC mode, flipping a bit in one ciphertext block scrambles the block it occurs in, and</span>
+    <span class='comment'>// reproduces the exact same edit in the following block after decryption. This means that by</span>
+    <span class='comment'>// choosing the bits we flip to occur in the block immediately before the one containing</span>
+    <span class='comment'>// &#39;:admin&lt;true:&#39; we can edit &#39;:&#39; into &#39;;&#39; and &#39;&lt;&#39; into &#39;=&#39;. This requires flipping the final</span>
+    <span class='comment'>// bit of each of bytes 32, 38, 43 and 46.</span>
+    <span class='kw'>for</span> <span class='ident'>position</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span>[<span class='number'>32</span>, <span class='number'>38</span>, <span class='number'>43</span>, <span class='number'>46</span>] {
+        <span class='ident'>bytes</span>[<span class='op'>*</span><span class='ident'>position</span>] <span class='op'>^=</span> <span class='number'>1</span>;
+    }
+    <span class='ident'>Data</span>::<span class='ident'>from_bytes</span>(<span class='ident'>bytes</span>)
+}</pre>
+</section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "cryptopals";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../../jquery.js"></script>
+    <script src="../../../../main.js"></script>
+    
+    <script defer src="../../../../search-index.js"></script>
+</body>
+</html>

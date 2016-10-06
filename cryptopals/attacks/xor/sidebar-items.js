@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["best_repeating_key","Finds the most likely repeating-XOR key that was used to encrypt the given data."],["best_single_byte_key","Finds the most likely single-byte key that was used to encrypt the given data."]]});

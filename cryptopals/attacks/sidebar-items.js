@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["block","Implementations of cryptographic attacks against block ciphers."],["xor","Attacks against ciphers which use XOR as the encryption algorithm."]]});

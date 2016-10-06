@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["xor","XORs the given data with a repeating key."]]});

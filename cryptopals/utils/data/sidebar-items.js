@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["FromBase64Error","Errors that can arise when parsing a base-64 string as bytes."],["FromHexError","Errors that can arise when parsing a hexadecimal string as bytes."]],"struct":[["Data","Structure which holds the contents of a message."]]});

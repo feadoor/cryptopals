@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CbcCookie","Encrypts user-provided data in the form of a cookie using CBC."],["EcbOrCbc","Encrypts data under a random choice of ECB or CBC."],["EcbUserProfile","Creates ECB-encrypted user tokens."],["EcbWithAffixes","Encrypts data under ECB after adding a prefix and a suffix."],["EcbWithSuffix","Encrypts data under ECB after adding a suffix."]]});
